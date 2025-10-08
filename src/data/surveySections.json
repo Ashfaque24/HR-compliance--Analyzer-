@@ -1,0 +1,53 @@
+[
+    {
+      "title": "Registration & Licensing",
+      "questions": [
+        { "id": "q1", "text": "Is your business registered with MCA (Ministry of Corporate Affairs)?", "options": ["Yes", "No", "In Progress"] },
+        { "id": "q2", "text": "What is your business structure?", "options": ["Private Limited", "LLP", "Partnership", "Proprietorship", "Other"] },
+        { "id": "q3", "text": "How many employees does your organization have?", "options": ["1-9", "10-19", "20-49", "50-99", "100+"] },
+        { "id": "q4", "text": "Is your organization registered with ESI?", "options": ["Yes", "No", "Not Applicable"] },
+        { "id": "q5", "text": "Is your organization registered with EPFO?", "options": ["Yes", "No", "Not Applicable"] },
+        { "id": "q6", "text": "Do you have a valid Shops & Establishment License or Factory License?", "options": ["Yes", "No", "In Process"] }
+      ]
+    },
+    {
+      "title": "Employee Welfare & Benefits",
+      "questions": [
+        { "id": "q1", "text": "Do you contribute to Labour Welfare Fund where applicable?", "options": ["Yes", "No", "Not Sure"] },
+        { "id": "q2", "text": "Are you compliant with Professional Tax requirements?", "options": ["Yes", "No", "Partially"] },
+        { "id": "q3", "text": "Are employee salaries compliant with minimum wage laws?", "options": ["Compliant", "Non-Compliant", "Under Review"] },
+        { "id": "q4", "text": "Do you follow the Wage Protection Scheme (WPS)?", "options": ["Yes", "No", "Planning to Implement"] }
+      ]
+    },
+    {
+      "title": "Policy & Documentation",
+      "questions": [
+        { "id": "q1", "text": "Do you have a written HR policy communicated to all employees?", "options": ["Written and Communicated", "Written but Not Communicated", "No Written Policy"] },
+        { "id": "q2", "text": "Are basic policies (leave, holidays, work hours, code of conduct) defined?", "options": ["Defined", "Partially Defined", "Not Defined"] },
+        { "id": "q3", "text": "What type of attendance system do you maintain?", "options": ["Digital", "Manual", "No System"] },
+        { "id": "q4", "text": "Are employee leave records properly maintained?", "options": ["Maintained", "Partially Maintained", "Not Maintained"] },
+        { "id": "q5", "text": "Are mandatory labour records (Forms A, B, C, H, K) maintained?", "options": ["Compliant", "Partially Compliant", "Non-Compliant"] }
+      ]
+    },
+    {
+      "title": "Statutory Payments & Returns",
+      "questions": [
+        { "id": "q1", "text": "Do you issue Form 16 and file TDS for applicable employees?", "options": ["Yes", "No", "Partially"] },
+        { "id": "q2", "text": "Are statutory dues (PF/ESIC/PT/Gratuity) remitted on time?", "options": ["On Time and Accurate", "Delayed", "Irregular"] }
+      ]
+
+
+    },
+    {
+      "title": "Workplace Governance",
+      "questions": [
+        { "id": "q1", "text": "Is an Internal Complaints Committee (ICC) formed under POSH Act?", "options": ["Yes", "No", "In Process"] },
+        { "id": "q2", "text": "Have you conducted an annual labour audit?", "options": ["Yes", "No", "Planning"] }
+      ]
+    }
+  ]
+  
+
+
+
+  
