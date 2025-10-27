@@ -3,7 +3,6 @@
 // Redux Toolkit imports for creating slices and async thunks
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-
 /**
  * Async thunk for user login API call.
  * Sends credentials to backend.
@@ -33,7 +32,6 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-
 /**
  * Async thunk for user logout API call.
  * Sends logout request to backend.
@@ -62,17 +60,20 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+// --- PERSIST TOKEN ON REFRESH ---
+// Read token from localStorage when Redux state initializes
+const persistedToken = localStorage.getItem('token');
+// You can also persist admin using localStorage if you wish to retain it too
+// const persistedAdmin = JSON.parse(localStorage.getItem("admin") || "null");
 
-// Initial state for the auth slice of Redux store.
-// Tracks if user is authenticated, loading state, errors, and auth token and user info.
+// Initial state for the auth slice of Redux store. Now includes persisted token.
 const initialState = {
-  isAuthenticated: false,
+  isAuthenticated: !!persistedToken,
   loading: false,
   error: null,
-  token: null,
-  admin: null,
+  token: persistedToken || null,
+  admin: null, // Or: persistedAdmin if you want admin data on refresh too
 };
-
 
 /**
  * Redux slice for authentication state management.
@@ -94,7 +95,6 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-
       // Fulfilled state on successful login
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
@@ -102,10 +102,11 @@ const authSlice = createSlice({
         state.token = action.payload.token;   // Store returned token
         state.admin = action.payload.admin;   // Store admin user info
 
-        // Optionally persist token for session continuity on reload
-        localStorage.setItem('token', action.payload.token);
+        // Persist token for session continuity on reload
+        localStorage.setItem("token", action.payload.token);
+        // Optionally persist admin info as well:
+        // localStorage.setItem("admin", JSON.stringify(action.payload.admin));
       })
-
       // Rejected state on login failure
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -114,13 +115,11 @@ const authSlice = createSlice({
         state.token = null;
         state.admin = null;
       })
-
       // Pending state of logout API call
       .addCase(logoutUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-
       // Fulfilled state on successful logout
       .addCase(logoutUser.fulfilled, (state) => {
         state.loading = false;
@@ -130,9 +129,9 @@ const authSlice = createSlice({
         state.error = null;
 
         // Remove persistent token from localStorage on logout
-        localStorage.removeItem('token');
+        localStorage.removeItem("token");
+        // localStorage.removeItem("admin"); // Optionally clear persisted admin
       })
-
       // Rejected state on logout failure
       .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;

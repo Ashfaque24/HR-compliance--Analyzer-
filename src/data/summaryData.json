@@ -1,0 +1,66 @@
+{
+    "overAllScore": 68,
+    "maxmScore": 100,
+    "summaryStatus": "Immediate Attention Required",
+    "summaryType": "danger",
+    "sectionRatings": [
+      { "sectionName": "Registration & Licensing", "score": 8, "mxmScore": 10 },
+      { "sectionName": "Employee Welfare & Benefits", "score": 12, "mxmScore": 20 },
+      { "sectionName": "Policy & Documentation", "score": 15, "mxmScore": 25 },
+      { "sectionName": "Statutory Payments & Returns", "score": 18, "mxmScore": 25 },
+      { "sectionName": "Workplace Governance", "score": 15, "mxmScore": 20 }
+    ],
+    "keyInsights": [
+      { "name": "Strong Area: Registration & Licensing", "status": "success" },
+      { "name": "Weak Area: Statutory Payments & Returns", "status": "danger" },
+      { "name": "Needs Improvement: Workplace Governance", "status": "warning" }
+    ],
+    "summary": [
+      {
+        "name": "Registration & Licensing",
+        "score": 8,
+        "maxScore": 10,
+        "completionRate": "80%",
+        "strengths": ["All licenses up to date", "Proper documentation maintained"],
+        "gaps": ["Delay in renewal tracking"],
+        "recommendations": ["Automate license renewal alerts", "Maintain centralized license register"]
+      },
+      {
+        "name": "Employee Welfare & Benefits",
+        "score": 12,
+        "maxScore": 20,
+        "completionRate": "60%",
+        "strengths": ["Good medical coverage", "Employee assistance programs active"],
+        "gaps": ["Limited wellness initiatives", "Outdated leave policy"],
+        "recommendations": ["Introduce wellness programs", "Update HR policies annually"]
+      },
+      {
+        "name": "Policy & Documentation",
+        "score": 15,
+        "maxScore": 25,
+        "completionRate": "60%",
+        "strengths": ["Policy handbook available", "Clear onboarding documentation"],
+        "gaps": ["No digital version of policies", "Missing signatures on older docs"],
+        "recommendations": ["Digitize all documents", "Review policies every quarter"]
+      },
+      {
+        "name": "Statutory Payments & Returns",
+        "score": 18,
+        "maxScore": 25,
+        "completionRate": "72%",
+        "strengths": ["Timely tax submissions", "Accurate payroll processing"],
+        "gaps": ["Delayed PF returns in last quarter"],
+        "recommendations": ["Implement automated compliance tracking", "Conduct monthly audits"]
+      },
+      {
+        "name": "Workplace Governance",
+        "score": 15,
+        "maxScore": 20,
+        "completionRate": "75%",
+        "strengths": ["Active grievance mechanism", "Regular management meetings"],
+        "gaps": ["Inconsistent attendance tracking"],
+        "recommendations": ["Adopt biometric attendance", "Set up transparent escalation channels"]
+      }
+    ]
+  }
+  
