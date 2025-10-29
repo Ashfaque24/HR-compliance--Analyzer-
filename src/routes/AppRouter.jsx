@@ -121,6 +121,7 @@ import AssessmentFlow from "../pages/assessment/AssessmentFlow";
 import AssessmentSummary from "../pages/assessment/AssessmentSummary";
 import ReportPage from "../pages/ReportPage";  
 import ReportView from "../pages/ReportView";
+import EditReportPage from "../pages/EditReportPage";
 
 export default function AppRouter() {
   return (
@@ -156,6 +157,18 @@ export default function AppRouter() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/admin/report/edit/:id"
+          element={
+            <ProtectedRoute>
+              <EditReportPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+
       </Routes>
     </BrowserRouter>
   );

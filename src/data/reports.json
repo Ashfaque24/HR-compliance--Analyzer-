@@ -71,8 +71,78 @@
         }
       ]
     }
+  },
+  {
+    "id": "RPT-002",
+    "company": "Beta Solutions",
+    "submitted": "2025-10-20",
+    "contact": "info@betasolutions.com",
+    "score": 75,
+    "status": "In Review",
+    "details": {
+      "overAllScore": 75,
+      "maxmScore": 100,
+      "summaryStatus": "Moderate Risk",
+      "summaryType": "warning",
+      "sectionRatings": [
+        { "sectionName": "Registration & Licensing", "score": 9, "mxmScore": 10 },
+        { "sectionName": "Employee Welfare & Benefits", "score": 14, "mxmScore": 20 },
+        { "sectionName": "Policy & Documentation", "score": 18, "mxmScore": 25 },
+        { "sectionName": "Statutory Payments & Returns", "score": 16, "mxmScore": 25 },
+        { "sectionName": "Workplace Governance", "score": 18, "mxmScore": 20 }
+      ],
+      "keyInsights": [
+        { "name": "Strong Area: Workplace Governance", "status": "success" },
+        { "name": "Weak Area: Statutory Payments & Returns", "status": "danger" },
+        { "name": "Needs Improvement: Employee Welfare & Benefits", "status": "warning" }
+      ],
+      "summary": [
+        {
+          "name": "Registration & Licensing",
+          "score": 9,
+          "maxScore": 10,
+          "completionRate": "90%",
+          "strengths": ["All licenses valid", "Quick renewal process"],
+          "gaps": ["Incomplete license audit trail"],
+          "recommendations": ["Maintain audit logs", "Schedule quarterly reviews"]
+        },
+        {
+          "name": "Employee Welfare & Benefits",
+          "score": 14,
+          "maxScore": 20,
+          "completionRate": "70%",
+          "strengths": ["Comprehensive insurance plans", "Active wellness programs"],
+          "gaps": ["Limited mental health support"],
+          "recommendations": ["Expand mental health resources", "Enhance leave policies"]
+        },
+        {
+          "name": "Policy & Documentation",
+          "score": 18,
+          "maxScore": 25,
+          "completionRate": "72%",
+          "strengths": ["Regular policy updates", "Clear role descriptions"],
+          "gaps": ["Delayed digital archiving"],
+          "recommendations": ["Automate document management", "Conduct regular compliance trainings"]
+        },
+        {
+          "name": "Statutory Payments & Returns",
+          "score": 16,
+          "maxScore": 25,
+          "completionRate": "64%",
+          "strengths": ["On-time tax payments", "Payroll accuracy"],
+          "gaps": ["Delayed filings occasionally"],
+          "recommendations": ["Implement compliance calendar", "Monthly reconciliation checks"]
+        },
+        {
+          "name": "Workplace Governance",
+          "score": 18,
+          "maxScore": 20,
+          "completionRate": "90%",
+          "strengths": ["Transparent grievance process", "Frequent staff meetings"],
+          "gaps": ["Inconsistent policy enforcement"],
+          "recommendations": ["Standardize enforcement", "Increase manager training"]
+        }
+      ]
+    }
   }
- 
 ]
-
-  
