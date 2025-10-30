@@ -20,7 +20,7 @@ export default function AdminLogin() {
 
   useEffect(() => {
     if (isAuthenticated && token) {
-      localStorage.setItem('token', token); // persist token if needed
+      localStorage.setItem('token', token); 
       navigate("/admin/dashboard");
     }
   }, [isAuthenticated, token, navigate]);
