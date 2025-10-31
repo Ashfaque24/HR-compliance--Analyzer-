@@ -144,5 +144,99 @@
         }
       ]
     }
+  },
+  {
+    "id": "RPT-003",
+    "company": "Interval Technologies",
+    "submitted": "2025-10-28",
+    "contact": "contact@intervaltech.com",
+    "score": 82,
+    "status": "Completed",
+    "details": {
+      "overAllScore": 82,
+      "maxmScore": 100,
+      "summaryStatus": "Low Risk",
+      "summaryType": "success",
+      "sectionRatings": [
+        { "sectionName": "Registration & Licensing", "score": 10, "mxmScore": 10 },
+        { "sectionName": "Employee Welfare & Benefits", "score": 17, "mxmScore": 20 },
+        { "sectionName": "Policy & Documentation", "score": 20, "mxmScore": 25 },
+        { "sectionName": "Statutory Payments & Returns", "score": 20, "mxmScore": 25 },
+        { "sectionName": "Workplace Governance", "score": 18, "mxmScore": 20 },
+        { "sectionName": "Data Privacy & Security", "score": 16, "mxmScore": 20 },
+        { "sectionName": "Environmental & Sustainability Practices", "score": 14, "mxmScore": 20 }
+      ],
+      "keyInsights": [
+        { "name": "Strong Area: Statutory Payments & Returns", "status": "success" },
+        { "name": "Weak Area: Environmental & Sustainability Practices", "status": "warning" },
+        { "name": "Excellent Compliance in Registration & Licensing", "status": "success" }
+      ],
+      "summary": [
+        {
+          "name": "Registration & Licensing",
+          "score": 10,
+          "maxScore": 10,
+          "completionRate": "100%",
+          "strengths": ["All licenses current", "Automated renewal system"],
+          "gaps": [],
+          "recommendations": ["Continue proactive monitoring"]
+        },
+        {
+          "name": "Employee Welfare & Benefits",
+          "score": 17,
+          "maxScore": 20,
+          "completionRate": "85%",
+          "strengths": ["Strong insurance and retirement plans", "Hybrid work options"],
+          "gaps": ["Limited family leave policy"],
+          "recommendations": ["Expand family and parental leave", "Add career counseling programs"]
+        },
+        {
+          "name": "Policy & Documentation",
+          "score": 20,
+          "maxScore": 25,
+          "completionRate": "80%",
+          "strengths": ["Centralized policy repository", "Frequent policy audits"],
+          "gaps": ["Manual approval bottlenecks"],
+          "recommendations": ["Adopt digital policy approval workflow", "Streamline update notifications"]
+        },
+        {
+          "name": "Statutory Payments & Returns",
+          "score": 20,
+          "maxScore": 25,
+          "completionRate": "80%",
+          "strengths": ["On-time submissions", "High payroll accuracy"],
+          "gaps": ["Minor lag in quarterly GST filings"],
+          "recommendations": ["Automate GST filing reminders", "Monthly review meetings"]
+        },
+        {
+          "name": "Workplace Governance",
+          "score": 18,
+          "maxScore": 20,
+          "completionRate": "90%",
+          "strengths": ["Inclusive leadership programs", "Robust grievance redressal system"],
+          "gaps": ["Limited conflict resolution training"],
+          "recommendations": ["Add mediation workshops", "Annual governance refresher course"]
+        },
+        {
+          "name": "Data Privacy & Security",
+          "score": 16,
+          "maxScore": 20,
+          "completionRate": "80%",
+          "strengths": ["Encrypted data storage", "Regular security audits"],
+          "gaps": ["Delayed incident reporting process"],
+          "recommendations": ["Automate incident alerts", "Quarterly security drills"]
+        },
+        {
+          "name": "Environmental & Sustainability Practices",
+          "score": 14,
+          "maxScore": 20,
+          "completionRate": "70%",
+          "strengths": ["E-waste management policy", "Energy-efficient infrastructure"],
+          "gaps": ["Low employee engagement in green programs"],
+          "recommendations": ["Launch sustainability awareness campaigns", "Introduce carbon offset initiatives"]
+        }
+      ]
+    }
   }
+  
 ]

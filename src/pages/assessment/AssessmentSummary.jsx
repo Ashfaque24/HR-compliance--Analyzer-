@@ -10,6 +10,7 @@
 // }
 
 
+
 import React from "react";
 import Summary_Repo from "../../components/Summary_Repo";
 import reportsData from "../../data/reports.json"; // default data
@@ -26,3 +27,5 @@ export default function AssessmentSummary() {
 
   return <Summary_Repo data={currentReport.details} showFull={false} />;
 }
+
+
