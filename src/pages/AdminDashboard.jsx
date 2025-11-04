@@ -65,69 +65,70 @@ export default function AdminDashboard() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isSmDown = useMediaQuery(theme.breakpoints.down("sm")); // screens below 600px
+  const isSmDown = useMediaQuery(theme.breakpoints.down("sm")); // Responsive check
 
-  // State for active view and current selected section
-  const [activeView, setActiveView] = useState("overview");
-  const [selectedSection, setSelectedSection] = useState(null);
+  // ======= View and Selection State =======
+  const [activeView, setActiveView] = useState("overview"); // Can be 'overview' or 'section-detail'
+  const [selectedSection, setSelectedSection] = useState(null); // Currently active section
 
-  // Section modal state and fields (for adding/editing)
+  // ======= Section Modal and Inputs State =======
   const [showAddSectionModal, setShowAddSectionModal] = useState(false);
   const [showEditSectionModal, setShowEditSectionModal] = useState(false);
   const [sectionTitle, setSectionTitle] = useState("");
   const [editSectionId, setEditSectionId] = useState(null);
   const [editSectionName, setEditSectionName] = useState("");
 
-  // Question add/edit state
+  // ======= Question Modal and Inputs State =======
   const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
   const [showEditQuestionModal, setShowEditQuestionModal] = useState(false);
   const [questionText, setQuestionText] = useState("");
   const [editQuestionId, setEditQuestionId] = useState(null);
   const [editQuestionText, setEditQuestionText] = useState("");
-  // Options for adding and editing questions (including score)
+  // Options for add/edit question, with default scores
   const [options, setOptions] = useState([
     { id: null, option_text: "", score: "4" },
     { id: null, option_text: "", score: "3" },
     { id: null, option_text: "", score: "2" },
     { id: null, option_text: "", score: "1" },
   ]);
-  const [editOptions, setEditOptions] = useState([
-    { id: null, option_text: "", score: "4" },
-  ]);
+  const [editOptions, setEditOptions] = useState([{ id: null, option_text: "", score: "4" }]);
 
-  // Modal state for single answer option editing (without score in this modal)
+  // ======= Answer Option Edit Modal State =======
   const [showEditAnswerModal, setShowEditAnswerModal] = useState(false);
   const [editAnswerId, setEditAnswerId] = useState(null);
   const [editOptionText, setEditOptionText] = useState("");
 
-  // Redux data selectors
+  // ======= Redux Selectors to Get Data =======
   const sections = useSelector((state) => state.sections.items);
   const questions = useSelector((state) => state.questions.items);
   const answers = useSelector((state) => state.answers.items);
 
-  // Initial data load
+  // ======= Data Fetch on Component Mount =======
   useEffect(() => {
     dispatch(fetchSectionsWithQuestionCount());
     dispatch(fetchAllQuestions());
   }, [dispatch]);
 
-  // Load questions when a section is selected
+  // ======= Fetch Questions When Section Selected =======
   useEffect(() => {
     if (selectedSection) {
       dispatch(fetchQuestionsBySection(selectedSection.id));
     }
   }, [selectedSection, dispatch]);
 
-  // Load answers whenever questions change
+  // ======= Fetch Answers Whenever Questions Change =======
   useEffect(() => {
     if (questions.length) {
       questions.forEach((q) => dispatch(fetchAnswersByQuestion(q.id)));
     }
   }, [questions, dispatch]);
 
+  // Total sections count for overview
   const totalSections = sections.length;
 
-  // --- SECTION HANDLERS ---
+  // ================== Section Handlers ==================
+
+  // Add new section handler
   const handleAddSection = async () => {
     if (sectionTitle.trim()) {
       await dispatch(addSection(sectionTitle.trim()));
@@ -137,11 +138,10 @@ export default function AdminDashboard() {
     }
   };
 
+  // Edit existing section handler
   const handleEditSection = async () => {
     if (editSectionName.trim() && editSectionId) {
-      await dispatch(
-        editSection({ id: editSectionId, section_name: editSectionName, is_active: 1 })
-      );
+      await dispatch(editSection({ id: editSectionId, section_name: editSectionName, is_active: 1 }));
       setShowEditSectionModal(false);
       setEditSectionId(null);
       setEditSectionName("");
@@ -149,6 +149,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Delete a section with confirm prompt
   const handleDeleteSection = async (sectionId) => {
     if (window.confirm("Are you sure you want to delete this section?")) {
       await dispatch(deleteSection(sectionId));
@@ -160,13 +161,15 @@ export default function AdminDashboard() {
     }
   };
 
-  // --- QUESTION HANDLERS ---
+  // ================== Question Handlers ==================
+
+  // Add new question for selected section
   const handleAddQuestion = async () => {
     if (questionText.trim() && options.every((opt) => opt.option_text.trim()) && selectedSection) {
-      const questionResult = await dispatch(
-        addQuestion({ question: questionText.trim(), section_id: selectedSection.id })
-      ).unwrap();
+      // Add question and wait for result with ID
+      const questionResult = await dispatch(addQuestion({ question: questionText.trim(), section_id: selectedSection.id })).unwrap();
 
+      // Add each option (answer) tied to question
       for (const opt of options) {
         await dispatch(
           addAnswer({
@@ -176,8 +179,9 @@ export default function AdminDashboard() {
           })
         );
       }
+
+      // Reset fields and close modal
       setQuestionText("");
-      // Reset options for next add with default scores
       setOptions([
         { id: null, option_text: "", score: "4" },
         { id: null, option_text: "", score: "3" },
@@ -189,9 +193,11 @@ export default function AdminDashboard() {
     }
   };
 
+  // Open edit question modal and preload question & options
   const handleEditQuestionClick = async (question) => {
     setEditQuestionId(question.id);
     setEditQuestionText(question.question);
+
     await dispatch(fetchAnswersByQuestion(question.id));
     const optionsWithIds = answers
       .filter((ans) => ans.question_id === question.id)
@@ -200,6 +206,7 @@ export default function AdminDashboard() {
         option_text: ans.option_text,
         score: ans.score !== undefined && ans.score !== null ? String(ans.score) : "",
       }));
+
     setEditOptions(
       optionsWithIds.length
         ? optionsWithIds
@@ -213,30 +220,19 @@ export default function AdminDashboard() {
     setShowEditQuestionModal(true);
   };
 
+  // Save edited question and its options
   const handleEditQuestion = async () => {
     if (editQuestionText.trim() && editQuestionId && selectedSection) {
-      await dispatch(
-        editQuestion({ id: editQuestionId, question: editQuestionText, section_id: selectedSection.id })
-      );
+      await dispatch(editQuestion({ id: editQuestionId, question: editQuestionText, section_id: selectedSection.id }));
+
       for (const opt of editOptions) {
         if (opt.id) {
-          await dispatch(
-            editAnswer({
-              id: opt.id,
-              option_text: opt.option_text,
-              score: opt.score !== undefined ? Number(opt.score) : 0,
-            })
-          );
+          await dispatch(editAnswer({ id: opt.id, option_text: opt.option_text, score: opt.score !== undefined ? Number(opt.score) : 0 }));
         } else if (opt.option_text.trim()) {
-          await dispatch(
-            addAnswer({
-              question_id: editQuestionId,
-              option_text: opt.option_text,
-              score: opt.score !== undefined ? Number(opt.score) : 0,
-            })
-          );
+          await dispatch(addAnswer({ question_id: editQuestionId, option_text: opt.option_text, score: opt.score !== undefined ? Number(opt.score) : 0 }));
         }
       }
+
       setShowEditQuestionModal(false);
       setEditQuestionId(null);
       setEditQuestionText("");
@@ -245,6 +241,7 @@ export default function AdminDashboard() {
     }
   };
 
+  // Delete a question with confirmation
   const handleDeleteQuestion = async (questionId) => {
     if (selectedSection && window.confirm("Are you sure you want to delete this question?")) {
       await dispatch(deleteQuestion(questionId));
@@ -253,19 +250,24 @@ export default function AdminDashboard() {
     }
   };
 
-  // --- ANSWER HANDLERS ---
+  // ================== Answer Handlers ==================
+
+  // Save edited answer option text
   const handleEditAnswer = async () => {
     if (editOptionText.trim() && editAnswerId) {
       await dispatch(editAnswer({ id: editAnswerId, option_text: editOptionText }));
       setShowEditAnswerModal(false);
       setEditAnswerId(null);
       setEditOptionText("");
+
+      // Refetch answers for updated questions in section
       if (questions.length && selectedSection) {
         questions.forEach((q) => dispatch(fetchAnswersByQuestion(q.id)));
       }
     }
   };
 
+  // Delete an answer option with confirmation
   const handleDeleteAnswer = async (answerId, questionId) => {
     if (window.confirm("Are you sure you want to delete this option?")) {
       await dispatch(deleteAnswer(answerId));
@@ -275,7 +277,7 @@ export default function AdminDashboard() {
 
   return (
     <Box sx={{ bgcolor: "#f5f7fa", minHeight: "100vh", p: { xs: 2, sm: 3, md: 4 } }}>
-      {/* Header */}
+      {/* ======= Header with title and notifications ======= */}
       <Box
         sx={{
           display: "flex",
@@ -295,14 +297,8 @@ export default function AdminDashboard() {
           </Typography>
         </Box>
 
-        {/* Notifications icon for report from user */}
         <Tooltip title="Notifications">
-          <IconButton
-            color="primary"
-            aria-label="notifications"
-            onClick={() => console.log("Open notification panel")}
-            size={isSmDown ? "small" : "medium"}
-          >
+          <IconButton color="primary" aria-label="notifications" size={isSmDown ? "small" : "medium"}>
             <Badge badgeContent={3} color="error" overlap="circular">
               <NotificationsIcon fontSize={isSmDown ? "small" : "medium"} />
             </Badge>
@@ -310,7 +306,7 @@ export default function AdminDashboard() {
         </Tooltip>
       </Box>
 
-      {/* Breadcrumb */}
+      {/* ======= Breadcrumb Navigation ======= */}
       {selectedSection ? (
         <Stack direction="row" alignItems="center" flexWrap="wrap" spacing={1} mb={2}>
           <Button
@@ -330,33 +326,22 @@ export default function AdminDashboard() {
           </Typography>
         </Stack>
       ) : (
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={2}
-          mb={3}
-          alignItems={{ xs: "stretch", sm: "center" }}
-        >
-          <Button
-            variant="contained"
-            startIcon={<Database />}
-            onClick={() => setActiveView("overview")}
-            fullWidth={isSmDown}
-            size={isSmDown ? "small" : "medium"}
-          >
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={3} alignItems={{ xs: "stretch", sm: "center" }}>
+          <Button variant="contained" startIcon={<Database />} onClick={() => setActiveView("overview")} fullWidth={isSmDown} size={isSmDown ? "small" : "medium"}>
             Overview
           </Button>
 
-          {/* BulkUpload component */}
+          {/* Bulk Upload component */}
           <Box width={isSmDown ? "100%" : "auto"}>
             <BulkUpload
               onFileSelected={(jsonData) => {
-                console.log("Excel as JSON:", jsonData); // This is now js array of objects
+                console.log("Excel as JSON:", jsonData);
               }}
               exampleFileUrl="/assets/Compliance_Questions (1).xlsx"
             />
           </Box>
 
-          {/* New Report Button */}
+          {/* Report button */}
           <Button
             variant="contained"
             color="primary"
@@ -370,7 +355,7 @@ export default function AdminDashboard() {
         </Stack>
       )}
 
-      {/* Overview */}
+      {/* ======= Overview Section: List all sections ======= */}
       {activeView === "overview" && !selectedSection && (
         <Stack spacing={4}>
           <Stack direction="row" spacing={3} justifyContent="center">
@@ -382,25 +367,18 @@ export default function AdminDashboard() {
               <Typography color="text.secondary">Total Sections</Typography>
             </Paper>
           </Stack>
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            flexWrap="wrap"
-            gap={2}
-          >
+
+          {/* Section header with Add button */}
+          <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
             <Typography variant="h6" fontWeight="bold">
               Survey Sections
             </Typography>
-            <Button
-              variant="contained"
-              startIcon={<Plus />}
-              onClick={() => setShowAddSectionModal(true)}
-              size={isSmDown ? "small" : "medium"}
-            >
+            <Button variant="contained" startIcon={<Plus />} onClick={() => setShowAddSectionModal(true)} size={isSmDown ? "small" : "medium"}>
               Add New Section
             </Button>
           </Box>
+
+          {/* List all sections */}
           <Stack spacing={2}>
             {sections.map((section) => (
               <Paper key={section.id} sx={{ p: 3 }}>
@@ -426,13 +404,7 @@ export default function AdminDashboard() {
                       {section.section_name}
                     </Typography>
                   </Stack>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    spacing={1}
-                    flexWrap="wrap"
-                    sx={{ mt: { xs: 1, sm: 0 } }}
-                  >
+                  <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap" sx={{ mt: { xs: 1, sm: 0 } }}>
                     <Typography color="text.secondary" variant="body2" noWrap>
                       {section.questionCount || 0} questions
                     </Typography>
@@ -447,11 +419,7 @@ export default function AdminDashboard() {
                     >
                       <Edit3 size={18} />
                     </IconButton>
-                    <IconButton
-                      color="error"
-                      size={isSmDown ? "small" : "medium"}
-                      onClick={() => handleDeleteSection(section.id)}
-                    >
+                    <IconButton color="error" size={isSmDown ? "small" : "medium"} onClick={() => handleDeleteSection(section.id)}>
                       <Trash2 size={18} />
                     </IconButton>
                     <IconButton
@@ -472,9 +440,10 @@ export default function AdminDashboard() {
         </Stack>
       )}
 
-      {/* Section Detail */}
+      {/* ======= Section Detail: Display questions and answers ======= */}
       {activeView === "section-detail" && selectedSection && (
         <Stack spacing={3}>
+          {/* Header with section name and add question button */}
           <Box
             display="flex"
             flexDirection={{ xs: "column", sm: "row" }}
@@ -490,16 +459,12 @@ export default function AdminDashboard() {
                 {questions.length} questions in this section
               </Typography>
             </Box>
-            <Button
-              variant="contained"
-              startIcon={<Plus />}
-              color="success"
-              onClick={() => setShowAddQuestionModal(true)}
-              size={isSmDown ? "small" : "medium"}
-            >
+            <Button variant="contained" startIcon={<Plus />} color="success" onClick={() => setShowAddQuestionModal(true)} size={isSmDown ? "small" : "medium"}>
               Add New Question
             </Button>
           </Box>
+
+          {/* List all questions with their options */}
           {questions.map((question, index) => (
             <Paper key={question.id} sx={{ p: 2 }}>
               <Box
@@ -541,9 +506,9 @@ export default function AdminDashboard() {
                 <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
                   {answers
                     .filter((ans) => ans.question_id === question.id)
-                    .map((option, optIndex) => (
+                    .map((option) => (
                       <Chip
-                        key={optIndex}
+                        key={option.id}
                         label={`${option.option_text} (Score: ${option.score || 0})`}
                         size="small"
                         sx={{ bgcolor: "purple.100", color: "purple.800", mr: 1, mb: 1 }}
@@ -562,15 +527,11 @@ export default function AdminDashboard() {
         </Stack>
       )}
 
-      {/* Modals Section */}
+      
+      {/* ======= Modals Section: Add/Edit Section, Add/Edit Question, Edit Answer ======= */}
+
       {/* Add Section Modal */}
-      <Dialog
-        open={showAddSectionModal}
-        onClose={() => setShowAddSectionModal(false)}
-        fullWidth
-        maxWidth="xs"
-        fullScreen={isSmDown}
-      >
+      <Dialog open={showAddSectionModal} onClose={() => setShowAddSectionModal(false)} fullWidth maxWidth="xs" fullScreen={isSmDown}>
         <DialogTitle>Add New Section</DialogTitle>
         <DialogContent>
           <TextField
@@ -591,13 +552,7 @@ export default function AdminDashboard() {
       </Dialog>
 
       {/* Edit Section Modal */}
-      <Dialog
-        open={showEditSectionModal}
-        onClose={() => setShowEditSectionModal(false)}
-        fullWidth
-        maxWidth="xs"
-        fullScreen={isSmDown}
-      >
+      <Dialog open={showEditSectionModal} onClose={() => setShowEditSectionModal(false)} fullWidth maxWidth="xs" fullScreen={isSmDown}>
         <DialogTitle>Edit Section</DialogTitle>
         <DialogContent>
           <TextField
@@ -618,13 +573,7 @@ export default function AdminDashboard() {
       </Dialog>
 
       {/* Add Question Modal */}
-      <Dialog
-        open={showAddQuestionModal}
-        onClose={() => setShowAddQuestionModal(false)}
-        maxWidth="sm"
-        fullWidth
-        fullScreen={isSmDown}
-      >
+      <Dialog open={showAddQuestionModal} onClose={() => setShowAddQuestionModal(false)} maxWidth="sm" fullWidth fullScreen={isSmDown}>
         <DialogTitle>Add New Question</DialogTitle>
         <DialogContent>
           <TextField
@@ -669,11 +618,7 @@ export default function AdminDashboard() {
                     inputProps={{ min: 0 }}
                   />
                   {options.length > 2 && (
-                    <IconButton
-                      color="error"
-                      size="small"
-                      onClick={() => setOptions(options.filter((_, i) => i !== index))}
-                    >
+                    <IconButton color="error" size="small" onClick={() => setOptions(options.filter((_, i) => i !== index))}>
                       <Trash2 size={16} />
                     </IconButton>
                   )}
@@ -681,12 +626,7 @@ export default function AdminDashboard() {
               </Grid>
             ))}
             <Grid item xs={12}>
-              <Button
-                onClick={() => setOptions([...options, { id: null, option_text: "", score: "" }])}
-                startIcon={<Plus />}
-                sx={{ alignSelf: "flex-start", mt: 1 }}
-                size={isSmDown ? "small" : "medium"}
-              >
+              <Button onClick={() => setOptions([...options, { id: null, option_text: "", score: "" }])} startIcon={<Plus />} sx={{ alignSelf: "flex-start", mt: 1 }} size={isSmDown ? "small" : "medium"}>
                 Add Option
               </Button>
             </Grid>
@@ -701,13 +641,7 @@ export default function AdminDashboard() {
       </Dialog>
 
       {/* Edit Question Modal */}
-      <Dialog
-        open={showEditQuestionModal}
-        onClose={() => setShowEditQuestionModal(false)}
-        maxWidth="sm"
-        fullWidth
-        fullScreen={isSmDown}
-      >
+      <Dialog open={showEditQuestionModal} onClose={() => setShowEditQuestionModal(false)} maxWidth="sm" fullWidth fullScreen={isSmDown}>
         <DialogTitle>Edit Question and Options</DialogTitle>
         <DialogContent>
           <TextField
@@ -765,12 +699,7 @@ export default function AdminDashboard() {
               </Grid>
             ))}
             <Grid item xs={12}>
-              <Button
-                onClick={() => setEditOptions([...editOptions, { id: null, option_text: "", score: "" }])}
-                startIcon={<Plus />}
-                sx={{ alignSelf: "flex-start", mt: 1 }}
-                size={isSmDown ? "small" : "medium"}
-              >
+              <Button onClick={() => setEditOptions([...editOptions, { id: null, option_text: "", score: "" }])} startIcon={<Plus />} sx={{ alignSelf: "flex-start", mt: 1 }} size={isSmDown ? "small" : "medium"}>
                 Add Option
               </Button>
             </Grid>
@@ -785,13 +714,7 @@ export default function AdminDashboard() {
       </Dialog>
 
       {/* Edit Answer Modal */}
-      <Dialog
-        open={showEditAnswerModal}
-        onClose={() => setShowEditAnswerModal(false)}
-        fullWidth
-        maxWidth="xs"
-        fullScreen={isSmDown}
-      >
+      <Dialog open={showEditAnswerModal} onClose={() => setShowEditAnswerModal(false)} fullWidth maxWidth="xs" fullScreen={isSmDown}>
         <DialogTitle>Edit Option</DialogTitle>
         <DialogContent>
           <TextField
@@ -810,7 +733,8 @@ export default function AdminDashboard() {
           </Button>
         </DialogActions>
       </Dialog>
+
+     
     </Box>
   );
 }
-
