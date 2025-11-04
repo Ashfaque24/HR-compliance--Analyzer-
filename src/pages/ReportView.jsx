@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import reportsData from "../data/reports.json";
