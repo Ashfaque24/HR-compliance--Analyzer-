@@ -1,22 +1,223 @@
 
-import React, { useEffect, useState, useMemo, useRef } from "react";
+// import React, { useEffect, useState, useMemo } from "react";
+// import {
+//   Box, Typography, Paper, Button, Stepper, Step, StepLabel,
+//   LinearProgress, useTheme, useMediaQuery
+// } from "@mui/material";
+// import { useNavigate, useLocation } from "react-router-dom";
+// import { useDispatch, useSelector } from "react-redux";
+// import { fetchQuestionsWithOptions } from "../../redux/features/assessmentSlice";
+
+// export default function AssessmentFlow() {
+//   const dispatch = useDispatch();
+//   const navigate = useNavigate();
+//   const location = useLocation();
+//   const user = location.state || {};
+
+//   const theme = useTheme();
+//   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+//   // Fetch all questions with nested options
+//   useEffect(() => {
+//     dispatch(fetchQuestionsWithOptions());
+//   }, []);
+
+//   const questions = useSelector((state) => state['assessment'].items);
+
+//   // Compose sections (assuming each question has a section property e.g. question.Section or question.section_id)
+//   const surveySections = useMemo(() => {
+//     if (!questions.length) return [];
+//     // Build sections from questions' section_id/title
+//     const sectionMap = new Map();
+//     questions.forEach((q) => {
+//       const sectionId = q.section_id;
+//       const sectionTitle = q.Section?.title || q.section_name || `Section ${sectionId}`;
+//       if (!sectionMap.has(sectionId)) {
+//         sectionMap.set(sectionId, { id: sectionId, title: sectionTitle, questions: [] });
+//       }
+//       sectionMap.get(sectionId).questions.push({
+//         id: q.id,
+//         text: q.text,
+//         options: (q.Options || []).map((opt) => ({label : opt.label , id : opt.id})),
+//       });
+//     });
+//     return Array.from(sectionMap.values());
+//   }, [questions]);
+
+//   // Track user responses
+//   const [responses, setResponses] = useState([]);
+//   const [currentSectionIdx, setCurrentSectionIdx] = useState(0);
+
+//   useEffect(() => {
+//     if (surveySections.length > 0 && responses.length === 0) {
+//       setResponses(surveySections.map(section => section.questions.map(() => ({questionId}))));
+//     }
+//   }, [surveySections, responses.length]);
+
+//   // Progress and navigation
+//   const totalAnswers = responses.flat().length;
+//   const answered = responses.flat().filter(Boolean).length;
+//   const progress = totalAnswers > 0 ? Math.round((answered / totalAnswers) * 100) : 0;
+//   const section = surveySections[currentSectionIdx];
+
+//   const isSelected = (qIdx, opt) => responses[currentSectionIdx]?.[qIdx] === opt;
+//   const handleChange = (questionIdx, value) => {
+//     console.log(questionIdx,value)
+
+//     setResponses(prev => {
+//       const newResponses = prev.map(arr => [...arr]);
+//       newResponses[currentSectionIdx][questionIdx] = value;
+//       return newResponses;
+//     });
+//   };
+//   const handleNext = () => setCurrentSectionIdx(idx => idx + 1);
+//   const handlePrev = () => setCurrentSectionIdx(idx => idx - 1);
+//   const handleSubmit = () => {
+//     navigate("/assessment/summary", {
+//       state: { userInfo: user, responses, surveySections },
+//     });
+//   };
+
+//   if (!questions.length) {
+//     return (
+//       <Box sx={{ py: 10, textAlign: "center" }}>
+//         <LinearProgress color="primary" />
+//         <Typography variant="h6" mt={3}>
+//           Loading assessment...
+//         </Typography>
+//       </Box>
+//     );
+//   }
+//   if (!surveySections.length || !section) {
+//     return (
+//       <Box sx={{ py: 10, textAlign: "center" }}>
+//         <Typography variant="h6" color="error">
+//           No assessment data defined. Please contact the administrator.
+//         </Typography>
+//       </Box>
+//     );
+//   }
+
+//   // Main render
+//   return (
+//     <>
+//       {/* Progress Bar */}
+//       <Box sx={{ minWidth: 200, my: 2, mx: "auto", maxWidth: 300 }}>
+//         <Typography variant="caption" color="primary" fontWeight="bold" gutterBottom>
+//           Overall Progress: {progress}%
+//         </Typography>
+//         <LinearProgress variant="determinate" value={progress} sx={{ borderRadius: 5, height: 8 }} color="primary" />
+//       </Box>
+//       {/* Assessment Content */}
+//       <Box sx={{ maxWidth: 900, mx: "auto", py: { xs: 3, sm: 5 }, px: { xs: 1, sm: 0 } }}>
+//         {isMobile ? (
+//           <Box sx={{ textAlign: "center", mb: 4 }}>
+//             <Typography variant="h6" fontWeight="bold">{section.title}</Typography>
+//           </Box>
+//         ) : (
+//           <Stepper activeStep={currentSectionIdx} alternativeLabel sx={{ mb: 4 }}>
+//             {surveySections.map((section) => (
+//               <Step key={section.id}>
+//                 <StepLabel>{section.title}</StepLabel>
+//               </Step>
+//             ))}
+//           </Stepper>
+//         )}
+
+//         <Typography variant="h6" align="center" sx={{ mb: 3 }}>
+//           Please answer the following questions to assess your organization's compliance in this area.
+//         </Typography>
+
+//         <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, mb: 3 }}>
+//           <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
+//             {section.title}
+//           </Typography>
+//           {section.questions.map((q, qi) => (
+//             <Box key={q.id} sx={{ mb: 4, p: { xs: 1, sm: 2 }, border: "1px solid #eaeaea", borderRadius: 3, background: "#fff" }}>
+//               <Typography fontWeight="medium" mb={2} fontSize={{ xs: 14, sm: 16 }}>
+//                 {qi + 1}. {q.text}
+//               </Typography>
+//               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 1 }}>
+//                 {q.options.map((opt) => (
+//                   <Button
+//                     key={opt.id}
+//                     onClick={() => handleChange(q.id, opt.id)}
+//                     sx={{
+//                       minWidth: { xs: "100%", sm: 150 },
+//                       minHeight: 48,
+//                       border: isSelected(qi, opt.label) ? "2px solid #1e3a8a" : "1px solid #eaeaea",
+//                       bgcolor: isSelected(qi, opt.label) ? "#f0f4ff" : "#fff",
+//                       borderRadius: 2,
+//                       boxShadow: isSelected(qi, opt.label) ? 2 : 0,
+//                       fontWeight: isSelected(qi, opt.label) ? "bold" : "normal",
+//                       color: "#222",
+//                       textAlign: "center",
+//                     }}
+//                     variant="outlined"
+//                   >
+//                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+//                       <span
+//                         style={{
+//                           width: 18,
+//                           height: 18,
+//                           display: "inline-block",
+//                           borderRadius: "50%",
+//                           border: "2px solid #ccc",
+//                           marginRight: 8,
+//                           background: isSelected(qi, opt.label) ? "#2563eb" : "#fff",
+//                           borderColor: isSelected(qi, opt.label) ? "#2563eb" : "#ccc",
+//                         }}
+//                       />
+//                       {opt.label}
+//                     </Box>
+//                   </Button>
+//                 ))}
+//               </Box>
+//             </Box>
+//           ))}
+//         </Paper>
+//         <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 1 }}>
+//           <Button disabled={currentSectionIdx === 0} onClick={handlePrev} variant="outlined" sx={{ flex: { xs: "1 1 100%", sm: "auto" } }}>
+//             Previous
+//           </Button>
+//           {currentSectionIdx < surveySections.length - 1 ? (
+//             <Button
+//               onClick={handleNext}
+//               variant="contained"
+//               disabled={responses[currentSectionIdx]?.includes("")}
+//               sx={{ flex: { xs: "1 1 100%", sm: "auto" } }}
+//             >
+//               Next Section
+//             </Button>
+//           ) : (
+//             <Button
+//               onClick={handleSubmit}
+//               variant="contained"
+//               disabled={responses[currentSectionIdx]?.includes("")}
+//               sx={{ flex: { xs: "1 1 100%", sm: "auto" } }}
+//             >
+//               Get Report
+//             </Button>
+//           )}
+//         </Box>
+//       </Box>
+//     </>
+//   );
+// }
+
+
+
+
+
+
+import React, { useEffect, useState, useMemo } from "react";
 import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  Stepper,
-  Step,
-  StepLabel,
-  LinearProgress,
-  useTheme,
-  useMediaQuery,
+  Box, Typography, Paper, Button, Stepper, Step, StepLabel,
+  LinearProgress, useTheme, useMediaQuery
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchSectionsWithQuestionCount } from "../../redux/features/sectionsSlice";
-import { fetchAllQuestions } from "../../redux/features/questionsSlice";
-import { fetchAnswersByQuestion } from "../../redux/features/answersSlice";
+import { fetchQuestionsWithOptions } from "../../redux/features/assessmentSlice";
 
 export default function AssessmentFlow() {
   const dispatch = useDispatch();
@@ -27,82 +228,74 @@ export default function AssessmentFlow() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
+  // Fetch questions with nested options
   useEffect(() => {
-    dispatch(fetchSectionsWithQuestionCount());
-    dispatch(fetchAllQuestions());
+    dispatch(fetchQuestionsWithOptions());
   }, [dispatch]);
 
-  const sections = useSelector((state) => state.sections.items);
-  const questions = useSelector((state) => state.questions.items);
-  const answers = useSelector((state) => state.answers.items);
+  const questions = useSelector((state) => state['assessment'].items);
 
-  const fetchedOnce = useRef(false);
-
-  useEffect(() => {
-    if (!fetchedOnce.current && questions.length > 0) {
-      fetchedOnce.current = true;
-      questions.forEach((q) => {
-        dispatch(fetchAnswersByQuestion(q.id));
-      });
-    }
-  }, [questions, dispatch]);
-
+  // Build sections map from questions including nested options
   const surveySections = useMemo(() => {
-    if (!sections.length || !questions.length) return [];
-    return sections.map((section) => ({
-      id: section.id,
-      title: section.section_name,
-      questions: questions
-        .filter((q) => q.section_id === section.id)
-        .map((q) => ({
-          id: q.id,
-          text: q.question,
-          options: answers
-            .filter((a) => a.question_id === q.id)
-            .map((a) => a.option_text),
-        })),
-    }));
-  }, [sections, questions, answers]);
+    if (!questions.length) return [];
+    const sectionMap = new Map();
+    questions.forEach((q) => {
+      const sectionId = q.section_id;
+      const sectionTitle = q.Section?.title || q.section_name || `Section ${sectionId}`;
+      if (!sectionMap.has(sectionId)) {
+        sectionMap.set(sectionId, { id: sectionId, title: sectionTitle, questions: [] });
+      }
+      sectionMap.get(sectionId).questions.push({
+        id: q.id,
+        text: q.text,
+        options: (q.Options || []).map(opt => ({ label: opt.label, id: opt.id })),
+      });
+    });
+    return Array.from(sectionMap.values());
+  }, [questions]);
 
+  // Track user responses: 2D array of selected option IDs per question per section
   const [responses, setResponses] = useState([]);
   const [currentSectionIdx, setCurrentSectionIdx] = useState(0);
 
   useEffect(() => {
     if (surveySections.length > 0 && responses.length === 0) {
-      setResponses(
-        surveySections.map((section) => section.questions.map(() => ""))
-      );
+      // initialize empty responses (empty string = no answer)
+      setResponses(surveySections.map(section => section.questions.map(() => "")));
     }
   }, [surveySections, responses.length]);
 
+  // Calculate progress
   const totalAnswers = responses.flat().length;
-  const answered = responses.flat().filter((r) => r !== "").length;
-  const progress =
-    totalAnswers > 0 ? Math.round((answered / totalAnswers) * 100) : 0;
-
+  const answered = responses.flat().filter(r => r !== "").length;
+  const progress = totalAnswers > 0 ? Math.round((answered / totalAnswers) * 100) : 0;
   const section = surveySections[currentSectionIdx];
 
-  const isSelected = (qIdx, opt) =>
-    responses[currentSectionIdx]?.[qIdx] === opt;
+  // Check if option is selected by option ID
+  const isSelected = (qIdx, optId) => responses[currentSectionIdx]?.[qIdx] === optId;
 
-  const handleChange = (questionIdx, value) => {
-    setResponses((prev) => {
-      const newResponses = prev.map((arr) => [...arr]);
-      newResponses[currentSectionIdx][questionIdx] = value;
+  // Update response with selected option ID
+  const handleChange = (questionIdx, optionId) => {
+    console.log("Question index:", questionIdx, "Selected option ID:", optionId);
+    setResponses(prev => {
+      const newResponses = prev.map(arr => [...arr]);
+      newResponses[currentSectionIdx][questionIdx] = optionId;
       return newResponses;
     });
   };
 
-  const handleNext = () => setCurrentSectionIdx((idx) => idx + 1);
-  const handlePrev = () => setCurrentSectionIdx((idx) => idx - 1);
+  const handleNext = () => setCurrentSectionIdx(idx => idx + 1);
+  const handlePrev = () => setCurrentSectionIdx(idx => idx - 1);
 
+  // Submit with user info, responses and surveySections state
   const handleSubmit = () => {
     navigate("/assessment/summary", {
       state: { userInfo: user, responses, surveySections },
     });
   };
 
-  if (!sections.length || !questions.length) {
+  // Loading UI
+  if (!questions.length) {
     return (
       <Box sx={{ py: 10, textAlign: "center" }}>
         <LinearProgress color="primary" />
@@ -123,39 +316,27 @@ export default function AssessmentFlow() {
     );
   }
 
+  // Main UI render
   return (
     <>
-      {/* Progress Bar */}
+      {/* Overall Progress */}
       <Box sx={{ minWidth: 200, my: 2, mx: "auto", maxWidth: 300 }}>
-        <Typography
-          variant="caption"
-          color="primary"
-          fontWeight="bold"
-          gutterBottom
-        >
+        <Typography variant="caption" color="primary" fontWeight="bold" gutterBottom>
           Overall Progress: {progress}%
         </Typography>
-        <LinearProgress
-          variant="determinate"
-          value={progress}
-          sx={{ borderRadius: 5, height: 8 }}
-          color="primary"
-        />
+        <LinearProgress variant="determinate" value={progress} sx={{ borderRadius: 5, height: 8 }} color="primary" />
       </Box>
 
-      {/* Assessment Content */}
+      {/* Survey content */}
       <Box sx={{ maxWidth: 900, mx: "auto", py: { xs: 3, sm: 5 }, px: { xs: 1, sm: 0 } }}>
-        {/* Show full Stepper on desktop, single current step label on mobile */}
         {isMobile ? (
           <Box sx={{ textAlign: "center", mb: 4 }}>
-            <Typography variant="h6" fontWeight="bold">
-              {section.title}
-            </Typography>
+            <Typography variant="h6" fontWeight="bold">{section.title}</Typography>
           </Box>
         ) : (
           <Stepper activeStep={currentSectionIdx} alternativeLabel sx={{ mb: 4 }}>
             {surveySections.map((section) => (
-              <Step key={section.title}>
+              <Step key={section.id}>
                 <StepLabel>{section.title}</StepLabel>
               </Step>
             ))}
@@ -163,8 +344,7 @@ export default function AssessmentFlow() {
         )}
 
         <Typography variant="h6" align="center" sx={{ mb: 3 }}>
-          Please answer the following questions to assess your organization's
-          compliance in this area.
+          Please answer the following questions to assess your organization's compliance in this area.
         </Typography>
 
         <Paper elevation={2} sx={{ p: { xs: 2, sm: 3 }, mb: 3 }}>
@@ -173,40 +353,24 @@ export default function AssessmentFlow() {
           </Typography>
 
           {section.questions.map((q, qi) => (
-            <Box
-              key={q.id}
-              sx={{
-                mb: 4,
-                p: { xs: 1, sm: 2 },
-                border: "1px solid #eaeaea",
-                borderRadius: 3,
-                background: "#fff",
-              }}
-            >
+            <Box key={q.id} sx={{ mb: 4, p: { xs: 1, sm: 2 }, border: "1px solid #eaeaea", borderRadius: 3, background: "#fff" }}>
               <Typography fontWeight="medium" mb={2} fontSize={{ xs: 14, sm: 16 }}>
                 {qi + 1}. {q.text}
               </Typography>
 
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 2,
-                  mt: 1,
-                }}
-              >
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 1 }}>
                 {q.options.map((opt) => (
                   <Button
-                    key={opt}
-                    onClick={() => handleChange(qi, opt)}
+                    key={opt.id}
+                    onClick={() => handleChange(qi, opt.id)}
                     sx={{
                       minWidth: { xs: "100%", sm: 150 },
                       minHeight: 48,
-                      border: isSelected(qi, opt) ? "2px solid #1e3a8a" : "1px solid #eaeaea",
-                      bgcolor: isSelected(qi, opt) ? "#f0f4ff" : "#fff",
+                      border: isSelected(qi, opt.id) ? "2px solid #1e3a8a" : "1px solid #eaeaea",
+                      bgcolor: isSelected(qi, opt.id) ? "#f0f4ff" : "#fff",
                       borderRadius: 2,
-                      boxShadow: isSelected(qi, opt) ? 2 : 0,
-                      fontWeight: isSelected(qi, opt) ? "bold" : "normal",
+                      boxShadow: isSelected(qi, opt.id) ? 2 : 0,
+                      fontWeight: isSelected(qi, opt.id) ? "bold" : "normal",
                       color: "#222",
                       textAlign: "center",
                     }}
@@ -221,11 +385,11 @@ export default function AssessmentFlow() {
                           borderRadius: "50%",
                           border: "2px solid #ccc",
                           marginRight: 8,
-                          background: isSelected(qi, opt) ? "#2563eb" : "#fff",
-                          borderColor: isSelected(qi, opt) ? "#2563eb" : "#ccc",
+                          background: isSelected(qi, opt.id) ? "#2563eb" : "#fff",
+                          borderColor: isSelected(qi, opt.id) ? "#2563eb" : "#ccc",
                         }}
                       />
-                      {opt}
+                      {opt.label}
                     </Box>
                   </Button>
                 ))}
@@ -234,20 +398,8 @@ export default function AssessmentFlow() {
           ))}
         </Paper>
 
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            gap: 1,
-          }}
-        >
-          <Button
-            disabled={currentSectionIdx === 0}
-            onClick={handlePrev}
-            variant="outlined"
-            sx={{ flex: { xs: "1 1 100%", sm: "auto" } }}
-          >
+        <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 1 }}>
+          <Button disabled={currentSectionIdx === 0} onClick={handlePrev} variant="outlined" sx={{ flex: { xs: "1 1 100%", sm: "auto" } }}>
             Previous
           </Button>
           {currentSectionIdx < surveySections.length - 1 ? (
@@ -274,4 +426,3 @@ export default function AssessmentFlow() {
     </>
   );
 }
- 

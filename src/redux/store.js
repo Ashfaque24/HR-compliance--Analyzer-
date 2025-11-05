@@ -3,6 +3,8 @@ import authReducer from "./features/authSlice";
 import sectionsReducer from "./features/sectionsSlice";
 import questionsReducer from "./features/questionsSlice";
 import answersReducer from "./features/answersSlice";
+import assessmentQuestionsReducer from "./features/assessmentSlice"
+
 
 const store = configureStore({
   reducer: {
@@ -10,6 +12,7 @@ const store = configureStore({
     sections: sectionsReducer,
     questions: questionsReducer,
     answers: answersReducer,
+    assessment: assessmentQuestionsReducer,
   },
 });
 
