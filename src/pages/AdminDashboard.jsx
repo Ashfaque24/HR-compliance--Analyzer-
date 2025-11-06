@@ -201,16 +201,6 @@ export default function AdminDashboard() {
         })
       ).unwrap();
 
-      // Add each option (answer) tied to question
-      for (const opt of options) {
-        await dispatch(
-          addAnswer({
-            question_id: questionResult.id,
-            option_text: opt.option_text.trim(),
-            score: opt.score !== "" ? Number(opt.score) : 0,
-          })
-        );
-      }
 
       // Reset fields and close modal
       setQuestionText("");
