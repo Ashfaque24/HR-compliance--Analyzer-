@@ -1,28 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import requestWrapper from "../../api/axiosInstance";
 
-// Async thunk for user login with new backend URL and response handling
-// export const loginUser = createAsyncThunk(
-//   "auth/loginUser",
-//   async (credentials, { rejectWithValue }) => {
-//     try {
-//       const response = await fetch("http://localhost:3000/admin/auth/login", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify(credentials),
-//       });
-//       const data = await response.json();
 
-//       if (!response.ok) {
-//         return rejectWithValue(data.message || "Login failed");
-//       }
-
-//       return data; // data = { token }
-//     } catch (error) {
-//       return rejectWithValue(error.message || "Network error");
-//     }
-//   }
-// );
 
 export const loginUser = createAsyncThunk("auth/loginUser", async (postData) => {
   const res = await requestWrapper({
