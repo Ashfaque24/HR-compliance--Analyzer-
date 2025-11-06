@@ -76,7 +76,7 @@ export const submitAssessmentAnswers = createAsyncThunk(
     try {
       const response = await requestWrapper({
         method: "POST",
-        url: `response/${session_uuid}/submit`,
+        url: `user/response/${session_uuid}/submit`,
         data: { answers },
       });
       return response;
