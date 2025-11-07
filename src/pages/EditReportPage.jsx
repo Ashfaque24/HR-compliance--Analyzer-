@@ -1,11 +1,24 @@
 
+
 // import React, { useEffect, useState } from "react";
 // import { useParams, useNavigate } from "react-router-dom";
 // import { useDispatch, useSelector } from "react-redux";
-// import { fetchEditReport, clearEditReport } from "../redux/features/editReportSlice";
+// import { fetchEditReport, clearEditReport, saveEditReport } from "../redux/features/editReportSlice";
 // import {
-//   Box, Paper, Typography, Stack, TextField, Button, MenuItem, Select, Grid,
-//   Chip, Divider, Accordion, AccordionSummary, AccordionDetails,
+//   Box,
+//   Paper,
+//   Typography,
+//   Stack,
+//   TextField,
+//   Button,
+//   MenuItem,
+//   Select,
+//   Grid,
+//   Chip,
+//   Divider,
+//   Accordion,
+//   AccordionSummary,
+//   AccordionDetails,
 // } from "@mui/material";
 // import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 // import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -14,36 +27,33 @@
 // const chipStyles = { fontWeight: 600, fontSize: 13, px: 1.2 };
 
 // export default function EditReportPage() {
-//   const { id } = useParams(); // session_uuid route param
-//   const navigate = useNavigate();
+//   const { id: session_uuid } = useParams(); // session_uuid param from URL
 //   const dispatch = useDispatch();
+//   const navigate = useNavigate();
 
-//   const { report, loading, error } = useSelector((state) => state.editReport);
+//   const { report, loading, error, saving, saveError } = useSelector((state) => state.editReport);
 //   const [form, setForm] = useState(null);
 
-//   // Fetch report from backend on mount and clear on unmount
 //   useEffect(() => {
-//     if (id) {
-//       dispatch(fetchEditReport(id));
+//     if (session_uuid) {
+//       dispatch(fetchEditReport(session_uuid));
 //     }
 //     return () => {
 //       dispatch(clearEditReport());
 //     };
-//   }, [dispatch, id]);
+//   }, [dispatch, session_uuid]);
 
-//   // Set fetched report to local form state for editing
 //   useEffect(() => {
 //     if (report) {
 //       setForm({ ...report });
 //     }
 //   }, [report]);
 
-//   // Display loading / error / not found states
 //   if (loading) return <Box sx={{ p: 4 }}>Loading...</Box>;
 //   if (error) return <Box sx={{ p: 4, color: "red" }}>{error}</Box>;
 //   if (!form) return <Box sx={{ p: 4 }}>Report not found.</Box>;
 
-//   // Form field change handlers
+//   // Handlers to update form fields immutably
 //   const handleChange = (field) => (e) =>
 //     setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
@@ -73,21 +83,15 @@
 //     }));
 //   };
 
-//   // Save changes to localStorage (consider replacing with API call)
-//   const handleSave = () => {
-//     // Load stored reports
-//     let storedReports = [];
+//   const handleSave = async () => {
+//     if (!form || !session_uuid) return;
 //     try {
-//       storedReports = JSON.parse(localStorage.getItem("reportsData")) || [];
-//     } catch {}
-
-//     const updatedReports = storedReports.map((r) =>
-//       String(r.session_uuid) === String(form.session_uuid) ? form : r
-//     );
-
-//     localStorage.setItem("reportsData", JSON.stringify(updatedReports));
-//     alert("✅ Changes saved successfully (stored in localStorage).");
-//     navigate(-1);
+//       await dispatch(saveEditReport({ session_uuid, reportData: form })).unwrap();
+//       alert("✅ Changes saved successfully.");
+//       navigate(-1);
+//     } catch (err) {
+//       alert("❌ Save failed: " + err);
+//     }
 //   };
 
 //   const handleBackToReports = () => {
@@ -186,7 +190,12 @@
 
 //       {/* Sections */}
 //       <Box>
-//         <Typography variant="h5" fontWeight={700} color="primary" sx={{ mb: 2, fontSize: { xs: "1.4rem", md: "1.8rem" } }}>
+//         <Typography
+//           variant="h5"
+//           fontWeight={700}
+//           color="primary"
+//           sx={{ mb: 2, fontSize: { xs: "1.4rem", md: "1.8rem" } }}
+//         >
 //           Section Details
 //         </Typography>
 //         {form.details.summary.map((section, idx) => (
@@ -215,53 +224,22 @@
 //                     inputProps={{ min: 0, max: section.maxScore }}
 //                     onChange={handleSectionChange(idx, "score")}
 //                   />
-//                   <Select
-//                     fullWidth
-//                     sx={{ mt: 2 }}
-//                     value={section.graphType || ""}
-//                     displayEmpty
-//                     onChange={handleSectionChange(idx, "graphType")}
-//                   >
+//                   <Select fullWidth sx={{ mt: 2 }} value={section.graphType || ""} displayEmpty onChange={handleSectionChange(idx, "graphType")}>
 //                     <MenuItem value="">Select graph type</MenuItem>
-//                     {graphTypes.map((gt) => (
-//                       <MenuItem key={gt} value={gt}>
-//                         {gt}
-//                       </MenuItem>
-//                     ))}
+//                     {graphTypes.map((gt) => <MenuItem key={gt} value={gt}>{gt}</MenuItem>)}
 //                   </Select>
 //                 </Grid>
 //                 <Grid item xs={12} md={3}>
 //                   <Typography fontWeight="bold" sx={{ mb: 1 }}>Strengths</Typography>
-//                   <TextField
-//                     multiline
-//                     minRows={4}
-//                     fullWidth
-//                     placeholder="Enter strengths, one per line..."
-//                     value={section.strengths ? section.strengths.join("\n") : ""}
-//                     onChange={handleSectionArrayChange(idx, "strengths")}
-//                   />
+//                   <TextField multiline minRows={4} fullWidth placeholder="Enter strengths, one per line..." value={section.strengths ? section.strengths.join("\n") : ""} onChange={handleSectionArrayChange(idx, "strengths")} />
 //                 </Grid>
 //                 <Grid item xs={12} md={3}>
 //                   <Typography fontWeight="bold" sx={{ mb: 1 }}>Gaps</Typography>
-//                   <TextField
-//                     multiline
-//                     minRows={4}
-//                     fullWidth
-//                     placeholder="Describe gaps/weaknesses, one per line..."
-//                     value={section.gaps ? section.gaps.join("\n") : ""}
-//                     onChange={handleSectionArrayChange(idx, "gaps")}
-//                   />
+//                   <TextField multiline minRows={4} fullWidth placeholder="Describe gaps/weaknesses, one per line..." value={section.gaps ? section.gaps.join("\n") : ""} onChange={handleSectionArrayChange(idx, "gaps")} />
 //                 </Grid>
 //                 <Grid item xs={12} md={3}>
 //                   <Typography fontWeight="bold" sx={{ mb: 1 }}>Actionable Recommendations</Typography>
-//                   <TextField
-//                     multiline
-//                     minRows={4}
-//                     fullWidth
-//                     placeholder="Provide recommendations, one per line..."
-//                     value={section.recommendations ? section.recommendations.join("\n") : ""}
-//                     onChange={handleSectionArrayChange(idx, "recommendations")}
-//                   />
+//                   <TextField multiline minRows={4} fullWidth placeholder="Provide recommendations, one per line..." value={section.recommendations ? section.recommendations.join("\n") : ""} onChange={handleSectionArrayChange(idx, "recommendations")} />
 //                 </Grid>
 //               </Grid>
 //             </AccordionDetails>
@@ -269,16 +247,21 @@
 //         ))}
 //       </Box>
 
-//       {/* ACTIONS */}
+//       {/* Actions */}
 //       <Paper elevation={0} sx={{ mt: 3, p: 2, bgcolor: "#fafcff", borderRadius: 2 }}>
 //         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="flex-end">
-//           <Button variant="contained" color="primary" onClick={handleSave} sx={{ px: 4, fontWeight: 700, width: { xs: "100%", sm: "auto" } }}>
-//             Save Changes
+//           <Button variant="contained" color="primary" onClick={handleSave} disabled={saving} sx={{ px: 4, fontWeight: 700, width: { xs: "100%", sm: "auto" } }}>
+//             {saving ? "Saving..." : "Save Changes"}
 //           </Button>
 //           <Button variant="outlined" color="secondary" onClick={() => navigate(-1)} sx={{ px: 4, width: { xs: "100%", sm: "auto" } }}>
 //             Cancel
 //           </Button>
 //         </Stack>
+//         {saveError && (
+//           <Typography color="error" sx={{ mt: 2 }}>
+//             Save error: {saveError}
+//           </Typography>
+//         )}
 //       </Paper>
 //     </Box>
 //   );
@@ -316,13 +299,14 @@ const graphTypes = ["Gauge Chart", "Star Chart", "Circular Chart"];
 const chipStyles = { fontWeight: 600, fontSize: 13, px: 1.2 };
 
 export default function EditReportPage() {
-  const { id: session_uuid } = useParams(); // session_uuid param from URL
+  const { id: session_uuid } = useParams(); // get session_uuid from URL params
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { report, loading, error, saving, saveError } = useSelector((state) => state.editReport);
   const [form, setForm] = useState(null);
 
+  // Fetch report on mount and cleanup on unmount
   useEffect(() => {
     if (session_uuid) {
       dispatch(fetchEditReport(session_uuid));
@@ -332,6 +316,7 @@ export default function EditReportPage() {
     };
   }, [dispatch, session_uuid]);
 
+  // Sync form state when report changes
   useEffect(() => {
     if (report) {
       setForm({ ...report });
@@ -342,10 +327,11 @@ export default function EditReportPage() {
   if (error) return <Box sx={{ p: 4, color: "red" }}>{error}</Box>;
   if (!form) return <Box sx={{ p: 4 }}>Report not found.</Box>;
 
-  // Handlers to update form fields immutably
+  // Update simple fields (company, contact, etc)
   const handleChange = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
+  // Update section summary fields (score, graphType)
   const handleSectionChange = (idx, field) => (e) => {
     const value = field === "score" ? Number(e.target.value) : e.target.value;
     setForm((prev) => ({
@@ -359,6 +345,7 @@ export default function EditReportPage() {
     }));
   };
 
+  // Update multi-line text arrays (strengths, gaps, recommendations)
   const handleSectionArrayChange = (idx, field) => (e) => {
     const value = e.target.value.split("\n");
     setForm((prev) => ({
@@ -372,17 +359,19 @@ export default function EditReportPage() {
     }));
   };
 
+  // Save report changes and navigate back on success
   const handleSave = async () => {
     if (!form || !session_uuid) return;
     try {
       await dispatch(saveEditReport({ session_uuid, reportData: form })).unwrap();
       alert("✅ Changes saved successfully.");
-      navigate(-1);
+      navigate(-1); // Go back to previous page (report listing)
     } catch (err) {
       alert("❌ Save failed: " + err);
     }
   };
 
+  // Navigate back button handler
   const handleBackToReports = () => {
     navigate("/admin/report");
   };
@@ -491,7 +480,13 @@ export default function EditReportPage() {
           <Accordion key={section.name} defaultExpanded sx={{ mb: 2, boxShadow: 3, borderRadius: 2, overflow: "hidden" }}>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
-              sx={{ bgcolor: "#f2f6ff", mb: 3, "& .MuiAccordionSummary-content": { alignItems: "center" }, flexWrap: "wrap", gap: 1 }}
+              sx={{
+                bgcolor: "#f2f6ff",
+                mb: 3,
+                "& .MuiAccordionSummary-content": { alignItems: "center" },
+                flexWrap: "wrap",
+                gap: 1,
+              }}
             >
               <Box sx={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
                 <Typography sx={{ fontWeight: 600, fontSize: { xs: "1rem", sm: "1.1rem" } }}>{section.name}</Typography>
@@ -513,22 +508,59 @@ export default function EditReportPage() {
                     inputProps={{ min: 0, max: section.maxScore }}
                     onChange={handleSectionChange(idx, "score")}
                   />
-                  <Select fullWidth sx={{ mt: 2 }} value={section.graphType || ""} displayEmpty onChange={handleSectionChange(idx, "graphType")}>
+                  <Select
+                    fullWidth
+                    sx={{ mt: 2 }}
+                    value={section.graphType || ""}
+                    displayEmpty
+                    onChange={handleSectionChange(idx, "graphType")}
+                  >
                     <MenuItem value="">Select graph type</MenuItem>
-                    {graphTypes.map((gt) => <MenuItem key={gt} value={gt}>{gt}</MenuItem>)}
+                    {graphTypes.map((gt) => (
+                      <MenuItem key={gt} value={gt}>
+                        {gt}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </Grid>
                 <Grid item xs={12} md={3}>
-                  <Typography fontWeight="bold" sx={{ mb: 1 }}>Strengths</Typography>
-                  <TextField multiline minRows={4} fullWidth placeholder="Enter strengths, one per line..." value={section.strengths ? section.strengths.join("\n") : ""} onChange={handleSectionArrayChange(idx, "strengths")} />
+                  <Typography fontWeight="bold" sx={{ mb: 1 }}>
+                    Strengths
+                  </Typography>
+                  <TextField
+                    multiline
+                    minRows={4}
+                    fullWidth
+                    placeholder="Enter strengths, one per line..."
+                    value={section.strengths ? section.strengths.join("\n") : ""}
+                    onChange={handleSectionArrayChange(idx, "strengths")}
+                  />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                  <Typography fontWeight="bold" sx={{ mb: 1 }}>Gaps</Typography>
-                  <TextField multiline minRows={4} fullWidth placeholder="Describe gaps/weaknesses, one per line..." value={section.gaps ? section.gaps.join("\n") : ""} onChange={handleSectionArrayChange(idx, "gaps")} />
+                  <Typography fontWeight="bold" sx={{ mb: 1 }}>
+                    Gaps
+                  </Typography>
+                  <TextField
+                    multiline
+                    minRows={4}
+                    fullWidth
+                    placeholder="Describe gaps/weaknesses, one per line..."
+                    value={section.gaps ? section.gaps.join("\n") : ""}
+                    onChange={handleSectionArrayChange(idx, "gaps")}
+                  />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                  <Typography fontWeight="bold" sx={{ mb: 1 }}>Actionable Recommendations</Typography>
-                  <TextField multiline minRows={4} fullWidth placeholder="Provide recommendations, one per line..." value={section.recommendations ? section.recommendations.join("\n") : ""} onChange={handleSectionArrayChange(idx, "recommendations")} />
+                  <Typography fontWeight="bold" sx={{ mb: 1 }}>
+                    Actionable Recommendations
+                  </Typography>
+                  <TextField
+                    multiline
+                    minRows={4}
+                    fullWidth
+                    placeholder="Provide recommendations, one per line..."
+                    value={section.recommendations ? section.recommendations.join("\n") : ""}
+                    onChange={handleSectionArrayChange(idx, "recommendations")}
+                  />
                 </Grid>
               </Grid>
             </AccordionDetails>
@@ -539,10 +571,21 @@ export default function EditReportPage() {
       {/* Actions */}
       <Paper elevation={0} sx={{ mt: 3, p: 2, bgcolor: "#fafcff", borderRadius: 2 }}>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="flex-end">
-          <Button variant="contained" color="primary" onClick={handleSave} disabled={saving} sx={{ px: 4, fontWeight: 700, width: { xs: "100%", sm: "auto" } }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSave}
+            disabled={saving}
+            sx={{ px: 4, fontWeight: 700, width: { xs: "100%", sm: "auto" } }}
+          >
             {saving ? "Saving..." : "Save Changes"}
           </Button>
-          <Button variant="outlined" color="secondary" onClick={() => navigate(-1)} sx={{ px: 4, width: { xs: "100%", sm: "auto" } }}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => navigate(-1)}
+            sx={{ px: 4, width: { xs: "100%", sm: "auto" } }}
+          >
             Cancel
           </Button>
         </Stack>
@@ -555,3 +598,4 @@ export default function EditReportPage() {
     </Box>
   );
 }
+
