@@ -62,7 +62,6 @@ export default function Landing() {
       alert("Failed to submit form. Please try again.");
     }
   }
-
   return (
     <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, minHeight: "100vh", fontFamily: "Arial, sans-serif", width: "100vw" }}>
       {/* Left information panel */}
