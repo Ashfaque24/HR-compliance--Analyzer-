@@ -477,7 +477,7 @@ export default function EditReportPage() {
         >
           Section Details
         </Typography>
-        {form.details.summary.map((section, idx) => (
+        {form?.details?.summary?.map((section, idx) => (
           <Accordion key={section.name} defaultExpanded sx={{ mb: 2, boxShadow: 3, borderRadius: 2, overflow: "hidden" }}>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
