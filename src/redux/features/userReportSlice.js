@@ -50,3 +50,8 @@ const userReportSlice = createSlice({
 
 export const { clearReport } = userReportSlice.actions;
 export default userReportSlice.reducer;
+
+
+
+
+// needed to deteate ----------------------------------------------------------------------------------
