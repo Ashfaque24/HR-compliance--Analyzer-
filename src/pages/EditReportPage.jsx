@@ -364,12 +364,13 @@ export default function EditReportPage() {
     if (!form || !session_uuid) return;
     try {
       await dispatch(saveEditReport({ session_uuid, reportData: form })).unwrap();
-      alert("✅ Changes saved successfully.");
-      navigate(-1); // Go back to previous page (report listing)
+      console.log("Saving success, navigating now");
+      navigate("/admin/report", { replace: true });
     } catch (err) {
       alert("❌ Save failed: " + err);
     }
   };
+  
 
   // Navigate back button handler
   const handleBackToReports = () => {
