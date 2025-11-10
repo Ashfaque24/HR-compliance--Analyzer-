@@ -9,6 +9,7 @@ import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllSubmissions } from "../redux/features/reportInfoSlice";
+import LoadingSpinner from "../components/common/LoadingSpinner";
 
 export default function ReportPage() {
   const dispatch = useDispatch();
@@ -37,13 +38,12 @@ export default function ReportPage() {
     return matchesSearch && matchesStatus;
   });
 
+
   if (loading) {
-    return (
-      <Box sx={{ p: 5, textAlign: "center" }}>
-        <Typography>Loading reports...</Typography>
-      </Box>
-    );
+    return <LoadingSpinner message="Loading reports..." />;
   }
+  
+
 
   if (error) {
     return (

@@ -160,6 +160,7 @@ import React, { useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAdminReport, clearReport } from "../redux/features/adminReportSlice";
+import LoadingSpinner from "../components/common/LoadingSpinner";
 import Summary_Repo from "../components/Summary_Repo";
 import {
   Box,
@@ -189,9 +190,7 @@ export default function ReportView() {
 
   if (loading)
     return (
-      <Box sx={{ p: 5 }}>
-        <Typography>Loading...</Typography>
-      </Box>
+      <LoadingSpinner message="Loading report..." />
     );
   if (error)
     return (

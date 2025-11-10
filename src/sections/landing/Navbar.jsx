@@ -14,6 +14,7 @@
 // import MenuIcon from "@mui/icons-material/Menu";
 // import { useNavigate, useLocation } from "react-router-dom";
 // import { useDispatch } from "react-redux";
+// import { logout } from "../../redux/features/authSlice";
 
 // import { LogOut } from "lucide-react";
 
@@ -32,7 +33,6 @@
 //   const onSummary = currentPath === "/assessment/summary";
 //   const isAdminPage = currentPath.startsWith("/admin") && currentPath !== "/admin/login";
 
-
 //   const handleMenuOpen = (event) => {
 //     setAnchorEl(event.currentTarget);
 //   };
@@ -40,8 +40,8 @@
 //     setAnchorEl(null);
 //   };
 
-//   const handleLogout = async () => {
-//     localStorage.removeItem("token");
+//   const handleLogout = () => {
+//     dispatch(logout());
 //     navigate("/admin/login");
 //   };
 
@@ -199,8 +199,8 @@
 
 //               {isAdminPage && (
 //                 <MenuItem
-//                   onClick={async () => {
-//                     handleLogout()
+//                   onClick={() => {
+//                     handleLogout();
 //                     handleMenuClose();
 //                   }}
 //                 >
@@ -216,6 +216,13 @@
 // };
 
 // export default Navbar;
+
+
+
+
+
+
+
 
 
 import React, { useEffect, useState } from "react";
@@ -234,7 +241,6 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../../redux/features/authSlice";
-
 import { LogOut } from "lucide-react";
 
 const Navbar = ({ hideMenu = false }) => {
@@ -250,7 +256,11 @@ const Navbar = ({ hideMenu = false }) => {
   }, [location]);
 
   const onSummary = currentPath === "/assessment/summary";
-  const isAdminPage = currentPath.startsWith("/admin") && currentPath !== "/admin/login";
+  const isAdminPage =
+    currentPath.startsWith("/admin") && currentPath !== "/admin/login";
+
+  // Show Admin button only on landing ("/") or any "/admin" route except "/admin/login"
+  const showAdminBtn = currentPath === "/" || currentPath.startsWith("/admin");
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -326,22 +336,24 @@ const Navbar = ({ hideMenu = false }) => {
               Home
             </Button>
 
-            <Button
-              variant="outlined"
-              sx={{
-                color: "white",
-                borderColor: "rgba(255,255,255,0.5)",
-                "&:hover": {
-                  borderColor: "white",
-                  backgroundColor: "rgba(255,255,255,0.1)",
-                },
-                fontSize: { xs: 12, md: 14 },
-                px: 2,
-              }}
-              onClick={() => navigate("/admin/dashboard")}
-            >
-              Admin
-            </Button>
+            {showAdminBtn && (
+              <Button
+                variant="outlined"
+                sx={{
+                  color: "white",
+                  borderColor: "rgba(255,255,255,0.5)",
+                  "&:hover": {
+                    borderColor: "white",
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                  },
+                  fontSize: { xs: 12, md: 14 },
+                  px: 2,
+                }}
+                onClick={() => navigate("/admin/dashboard")}
+              >
+                Admin
+              </Button>
+            )}
 
             {onSummary && (
               <Button
@@ -406,14 +418,16 @@ const Navbar = ({ hideMenu = false }) => {
               >
                 Home
               </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  navigate("/admin/dashboard");
-                  handleMenuClose();
-                }}
-              >
-                Admin
-              </MenuItem>
+              {showAdminBtn && (
+                <MenuItem
+                  onClick={() => {
+                    navigate("/admin/dashboard");
+                    handleMenuClose();
+                  }}
+                >
+                  Admin
+                </MenuItem>
+              )}
               {onSummary && <MenuItem onClick={handleMenuClose}>Instant Report 📄</MenuItem>}
 
               {isAdminPage && (
@@ -435,4 +449,5 @@ const Navbar = ({ hideMenu = false }) => {
 };
 
 export default Navbar;
+
 
