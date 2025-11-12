@@ -1,66 +1,7 @@
-// import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import requestWrapper from "../../api/axiosInstance";
-
-// // Async thunk to fetch report summary for editing by session_uuid
-// export const fetchEditReport = createAsyncThunk(
-//   "editReport/fetchEditReport",
-//   async (session_uuid, { rejectWithValue }) => {
-//     try {
-//       const response = await requestWrapper({
-//         method: "GET",
-//         url: `user/response/${session_uuid}/summary`,
-//       });
-//       // Assuming response contains the report data directly
-//       return response;
-//     } catch (error) {
-//       return rejectWithValue(error.data || error.message || "Network error");
-//     }
-//   }
-// );
-
-// const editReportSlice = createSlice({
-//   name: "editReport",
-//   initialState: {
-//     report: null,
-//     loading: false,
-//     error: null,
-//   },
-//   reducers: {
-//     clearEditReport(state) {
-//       state.report = null;
-//       state.loading = false;
-//       state.error = null;
-//     },
-//   },
-//   extraReducers: (builder) => {
-//     builder
-//       .addCase(fetchEditReport.pending, (state) => {
-//         state.loading = true;
-//         state.error = null;
-//       })
-//       .addCase(fetchEditReport.fulfilled, (state, action) => {
-//         state.loading = false;
-//         state.report = action.payload;
-//       })
-//       .addCase(fetchEditReport.rejected, (state, action) => {
-//         state.loading = false;
-//         state.error = action.payload;
-//       });
-//   },
-// });
-
-// export const { clearEditReport } = editReportSlice.actions;
-// export default editReportSlice.reducer;
-
-
-
-
-
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import requestWrapper from "../../api/axiosInstance";
 
-// Async thunk to fetch report summary for editing by session_uuid
+// Fetch report summary by session_uuid
 export const fetchEditReport = createAsyncThunk(
   "editReport/fetchEditReport",
   async (session_uuid, { rejectWithValue }) => {
@@ -69,14 +10,14 @@ export const fetchEditReport = createAsyncThunk(
         method: "GET",
         url: `user/response/${session_uuid}/summary`,
       });
-      return response;  // Expecting full report object
+      return response; // full report object expected
     } catch (error) {
       return rejectWithValue(error.data || error.message || "Network error");
     }
   }
 );
 
-// Async thunk to save edited report via PUT API
+// Save edited report by session_uuid
 export const saveEditReport = createAsyncThunk(
   "editReport/saveEditReport",
   async ({ session_uuid, reportData }, { rejectWithValue }) => {
@@ -84,9 +25,9 @@ export const saveEditReport = createAsyncThunk(
       const response = await requestWrapper({
         method: "PUT",
         url: `user/response/${session_uuid}/edit`,
-        data: reportData,
+        data: reportData, // Send full updated report including graphType fields
       });
-      return response; // Expecting updated report or status
+      return response;
     } catch (error) {
       return rejectWithValue(error.data || error.message || "Network error");
     }
@@ -131,7 +72,7 @@ const editReportSlice = createSlice({
       })
       .addCase(saveEditReport.fulfilled, (state, action) => {
         state.saving = false;
-        state.report = action.payload;  // Update report with saved data
+        state.report = action.payload;
       })
       .addCase(saveEditReport.rejected, (state, action) => {
         state.saving = false;
@@ -142,3 +83,4 @@ const editReportSlice = createSlice({
 
 export const { clearEditReport } = editReportSlice.actions;
 export default editReportSlice.reducer;
+

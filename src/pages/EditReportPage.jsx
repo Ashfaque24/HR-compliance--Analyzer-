@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,14 +26,13 @@ const graphTypes = ["Gauge Chart", "Star Chart", "Circular Chart"];
 const chipStyles = { fontWeight: 600, fontSize: 13, px: 1.2 };
 
 export default function EditReportPage() {
-  const { id: session_uuid } = useParams(); // get session_uuid from URL params
+  const { id: session_uuid } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { report, loading, error, saving, saveError } = useSelector((state) => state.editReport);
   const [form, setForm] = useState(null);
 
-  // Fetch report on mount and cleanup on unmount
   useEffect(() => {
     if (session_uuid) {
       dispatch(fetchEditReport(session_uuid));
@@ -44,7 +42,6 @@ export default function EditReportPage() {
     };
   }, [dispatch, session_uuid]);
 
-  // Sync form state when report changes
   useEffect(() => {
     if (report) {
       setForm({ ...report });
@@ -52,15 +49,14 @@ export default function EditReportPage() {
   }, [report]);
 
   if (loading) return <LoadingSpinner message="Loading report for editing..." />;
-
   if (error) return <Box sx={{ p: 4, color: "red" }}>{error}</Box>;
   if (!form && !loading && !error) return <Box sx={{ p: 4 }}>Report not found.</Box>;
 
-  // Update simple fields (company, contact, etc)
+  // Update simple form fields
   const handleChange = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
-  // Update section summary fields (score, graphType)
+  // Update section fields including graphType
   const handleSectionChange = (idx, field) => (e) => {
     const value = field === "score" ? Number(e.target.value) : e.target.value;
     setForm((prev) => ({
@@ -93,7 +89,6 @@ export default function EditReportPage() {
     if (!form || !session_uuid) return;
     try {
       await dispatch(saveEditReport({ session_uuid, reportData: form })).unwrap();
-      console.log("Saving success, navigating now");
       navigate("/admin/report", { replace: true });
     } catch (err) {
       alert("❌ Save failed: " + err);
@@ -163,7 +158,7 @@ export default function EditReportPage() {
             <TextField
               fullWidth
               label="Date Submitted"
-              value={form.submitted}
+              value={form.submitted || ""}
               onChange={handleChange("submitted")}
               sx={{ mb: { xs: 2, md: 0 } }}
             />
@@ -171,7 +166,7 @@ export default function EditReportPage() {
           <Grid item xs={6} md={1.5}>
             <Select
               fullWidth
-              value={form.status}
+              value={form.status || ""}
               onChange={handleChange("status")}
               displayEmpty
               sx={{ mb: { xs: 2, md: 0 } }}
@@ -180,6 +175,7 @@ export default function EditReportPage() {
               <MenuItem value="Enhanced">Enhanced</MenuItem>
               <MenuItem value="In Review">In Review</MenuItem>
               <MenuItem value="Pending">Pending</MenuItem>
+              <MenuItem value="In Progress">In Progress</MenuItem>
             </Select>
           </Grid>
           <Grid item xs={6} md={0.5}>
@@ -187,7 +183,7 @@ export default function EditReportPage() {
               fullWidth
               label="Score"
               type="number"
-              value={form.score}
+              value={form.score || 0}
               onChange={handleChange("score")}
               sx={{ mb: { xs: 2, md: 0 } }}
             />
@@ -252,6 +248,7 @@ export default function EditReportPage() {
                     ))}
                   </Select>
                 </Grid>
+
                 <Grid item xs={12} md={3}>
                   <Typography fontWeight="bold" sx={{ mb: 1 }}>
                     Strengths
@@ -327,4 +324,3 @@ export default function EditReportPage() {
     </Box>
   );
 }
-

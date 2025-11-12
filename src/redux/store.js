@@ -1,5 +1,4 @@
 
-
 // import { configureStore } from "@reduxjs/toolkit";
 // import authReducer from "./features/authSlice";
 // import sectionsReducer from "./features/sectionsSlice";
@@ -8,6 +7,7 @@
 // import assessmentQuestionsReducer from "./features/assessmentSlice";
 // import adminReportReducer from "./features/adminReportSlice";
 // import reportInfoReducer from "./features/reportInfoSlice"; 
+// import editReportReducer from "./features/editReportSlice";  // Import edit report slice
 
 // const store = configureStore({
 //   reducer: {
@@ -17,11 +17,13 @@
 //     answers: answersReducer,
 //     assessment: assessmentQuestionsReducer,
 //     adminReport: adminReportReducer,
-//     reportInfo: reportInfoReducer, // Add new slice here
+//     reportInfo: reportInfoReducer,
+//     editReport: editReportReducer,  // Add edit report slice here
 //   },
 // });
 
 // export default store;
+
 
 
 
@@ -32,8 +34,9 @@ import questionsReducer from "./features/questionsSlice";
 import answersReducer from "./features/answersSlice";
 import assessmentQuestionsReducer from "./features/assessmentSlice";
 import adminReportReducer from "./features/adminReportSlice";
-import reportInfoReducer from "./features/reportInfoSlice"; 
-import editReportReducer from "./features/editReportSlice";  // Import edit report slice
+import reportInfoReducer from "./features/reportInfoSlice";
+import editReportReducer from "./features/editReportSlice";
+import bulkUploadReducer from "./features/bulkUploadSlice"; // ✅ import added
 
 const store = configureStore({
   reducer: {
@@ -44,7 +47,8 @@ const store = configureStore({
     assessment: assessmentQuestionsReducer,
     adminReport: adminReportReducer,
     reportInfo: reportInfoReducer,
-    editReport: editReportReducer,  // Add edit report slice here
+    editReport: editReportReducer,
+    bulkUpload: bulkUploadReducer, // ✅ registered here
   },
 });
 
