@@ -75,7 +75,9 @@ export default function AssessmentSummary() {
     >
       {/* Floating Download button positioned on the top-right of the report */}
       <Box sx={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
-        <Button variant="contained" size="small" onClick={handleDownloadPDF}>
+        <Button variant="contained" size="small" onClick={handleDownloadPDF}
+        sx={{background:"#18a16e"}}
+        >
           Download Report
         </Button>
       </Box>

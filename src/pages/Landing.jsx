@@ -15,27 +15,25 @@ import requestWrapper from "../api/axiosInstance";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 
 export default function Landing() {
-  // State to store user input from form fields
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     phone: "",
     company: "",
   });
+
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
 
-  // Update form state when inputs change
   function handleChange(e) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   }
 
-  // Send formData to backend, store session_uuid in localStorage
   const handleApiSubmit = async () => {
     try {
       const response = await requestWrapper({
         method: "POST",
-        url: "user/response/start", // Replace with your actual backend endpoint
+        url: "user/response/start",
         data: {
           fullName: formData.fullName,
           email: formData.email,
@@ -43,9 +41,7 @@ export default function Landing() {
           company: formData.company,
         },
       });
-      console.log("Form submitted successfully:", response);
 
-      // Save session_uuid to localStorage if returned
       if (response.session_uuid) {
         localStorage.setItem("session_uuid", response.session_uuid);
       } else {
@@ -61,14 +57,14 @@ export default function Landing() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setSubmitting(true); // Start loader
+    setSubmitting(true);
     try {
-      await handleApiSubmit(); // API request
-      navigate("/assessment", { state: formData }); // Proceed on success
+      await handleApiSubmit();
+      navigate("/assessment", { state: formData });
     } catch {
       alert("Failed to submit form. Please try again.");
     } finally {
-      setSubmitting(false); // Stop loader after everything, success or error
+      setSubmitting(false);
     }
   }
 
@@ -78,7 +74,7 @@ export default function Landing() {
         display: "flex",
         flexDirection: { xs: "column", md: "row" },
         minHeight: "100vh",
-        fontFamily: "Arial, sans-serif",
+        fontFamily: "Helvetica, Arial, sans-serif", // ← FONT UPDATED HERE
         width: "100vw",
       }}
     >
@@ -100,6 +96,7 @@ export default function Landing() {
         <Typography variant="h4" fontWeight="bold">
           Get Your HR Compliance Score in Minutes
         </Typography>
+
         <Typography
           sx={{
             maxWidth: { xs: "100%", md: 400 },
@@ -109,6 +106,7 @@ export default function Landing() {
           Our AI-powered analysis evaluates your organization across 5 critical
           compliance areas and provides actionable recommendations.
         </Typography>
+
         <Stack
           spacing={2}
           sx={{
@@ -118,7 +116,7 @@ export default function Landing() {
           direction="column"
           alignItems={{ xs: "center", md: "flex-start" }}
         >
-          {/* Features */}
+          {/* Feature 1 */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Paper
               elevation={3}
@@ -140,6 +138,8 @@ export default function Landing() {
               </Typography>
             </Box>
           </Box>
+
+          {/* Feature 2 */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Paper
               elevation={3}
@@ -161,6 +161,8 @@ export default function Landing() {
               </Typography>
             </Box>
           </Box>
+
+          {/* Feature 3 */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Paper
               elevation={3}
@@ -214,6 +216,7 @@ export default function Landing() {
           <Typography variant="h5" fontWeight="bold">
             Start Your Assessment
           </Typography>
+
           <Typography>
             Enter your details to begin the compliance evaluation
           </Typography>
@@ -227,6 +230,7 @@ export default function Landing() {
             required
             fullWidth
           />
+
           <TextField
             label="Email Address *"
             name="email"
@@ -237,6 +241,7 @@ export default function Landing() {
             required
             fullWidth
           />
+
           <TextField
             label="Phone Number *"
             name="phone"
@@ -247,6 +252,7 @@ export default function Landing() {
             required
             fullWidth
           />
+
           <TextField
             label="Company Name *"
             name="company"
@@ -256,11 +262,12 @@ export default function Landing() {
             required
             fullWidth
           />
+
           <Button
             type="submit"
             variant="contained"
             size="large"
-            sx={{ mt: 2 }}
+            sx={{ mt: 2, background: "#18a16e" }}
             disabled={submitting}
           >
             {submitting ? (

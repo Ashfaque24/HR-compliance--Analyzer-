@@ -43,14 +43,14 @@ export default function BulkUpload() {
    */
   const groupRows = (rows) => {
     const grouped = {};
-
+  
     rows.forEach((row) => {
       const section = row.Section?.trim();
       const question = row.Question?.trim();
       if (!section || !question) return;
-
+  
       const key = `${section}|${question}`;
-
+  
       if (!grouped[key]) {
         grouped[key] = {
           section,
@@ -58,24 +58,21 @@ export default function BulkUpload() {
           options: [],
         };
       }
-
-      // Split comma-separated options and scores (if any)
+  
       const opts = row.Options ? row.Options.split(",").map((o) => o.trim()) : [];
-      const scores = row.Scores
-        ? row.Scores.split(",").map((s) => Number(s.trim()) || 0)
-        : [];
-
-      opts.forEach((name, index) => {
-        const score = scores[index] ?? 0; // default 0 if no score provided
+      const singleScore = Number(row.Score) || 0; // single score value
+  
+      opts.forEach((name) => {
         if (!grouped[key].options.some((o) => o.name === name)) {
-          grouped[key].options.push({ name, score }); // ✅ final structure
+          grouped[key].options.push({ name, score: singleScore });
         }
       });
     });
-
+  
     return Object.values(grouped);
   };
-
+  
+  
   // Handle Excel file upload
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -128,6 +125,7 @@ export default function BulkUpload() {
         color="primary"
         startIcon={<File />}
         onClick={() => setOpen(true)}
+        sx={{background: "#18a16e" }}
       >
         Bulk Upload
       </Button>
@@ -158,6 +156,7 @@ export default function BulkUpload() {
               startIcon={<UploadCloud />}
               onClick={handleUploadClick}
               disabled={loading}
+              sx={{background:"#18a16e"}}
             >
               {loading ? (
                 <CircularProgress size={22} color="inherit" />
@@ -177,11 +176,11 @@ export default function BulkUpload() {
 
             {/* Example File Download */}
             <Button
-              variant="outlined"
+              variant="contained"
               component="a"
               href={exampleFileUrl}
               download="Example_Compliance_Questions.xlsx" // ✅ forces download
-              sx={{ ml: 2 }}
+              sx={{ ml: 2, backgroundColor:"#18a16e" }}
             >
               Download Example
             </Button>

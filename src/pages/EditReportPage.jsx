@@ -1,23 +1,12 @@
+
+// EditReportPage.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import { fetchEditReport, clearEditReport, saveEditReport } from "../redux/features/editReportSlice";
 import {
-  Box,
-  Paper,
-  Typography,
-  Stack,
-  TextField,
-  Button,
-  MenuItem,
-  Select,
-  Grid,
-  Chip,
-  Divider,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+  Box, Paper, Typography, Stack, TextField, Button, MenuItem, Select, Grid, Chip, Divider, Accordion, AccordionSummary, AccordionDetails,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -44,7 +33,22 @@ export default function EditReportPage() {
 
   useEffect(() => {
     if (report) {
-      setForm({ ...report });
+      // Deep clone to avoid mutation issues
+      let updatedReport = JSON.parse(JSON.stringify(report));
+      
+      if (updatedReport.details?.summary && updatedReport.details?.sectionRatings) {
+        updatedReport.details.summary = updatedReport.details.summary.map((section) => {
+          const ratingData = updatedReport.details.sectionRatings.find(
+            (rating) => rating.sectionName === section.name
+          );
+          return {
+            ...section,
+            graphType: ratingData?.graphType || section.graphType || "Gauge Chart",
+          };
+        });
+      }
+      
+      setForm(updatedReport);
     }
   }, [report]);
 
@@ -52,11 +56,9 @@ export default function EditReportPage() {
   if (error) return <Box sx={{ p: 4, color: "red" }}>{error}</Box>;
   if (!form && !loading && !error) return <Box sx={{ p: 4 }}>Report not found.</Box>;
 
-  // Update simple form fields
   const handleChange = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
-  // Update section fields including graphType
   const handleSectionChange = (idx, field) => (e) => {
     const value = field === "score" ? Number(e.target.value) : e.target.value;
     setForm((prev) => ({
@@ -70,7 +72,6 @@ export default function EditReportPage() {
     }));
   };
 
-  // Update multi-line text arrays (strengths, gaps, recommendations)
   const handleSectionArrayChange = (idx, field) => (e) => {
     const value = e.target.value.split("\n");
     setForm((prev) => ({
@@ -84,7 +85,6 @@ export default function EditReportPage() {
     }));
   };
 
-  // Save report changes and navigate back on success
   const handleSave = async () => {
     if (!form || !session_uuid) return;
     try {
@@ -95,7 +95,6 @@ export default function EditReportPage() {
     }
   };
 
-  // Navigate back button handler
   const handleBackToReports = () => {
     navigate("/admin/report");
   };
@@ -111,66 +110,34 @@ export default function EditReportPage() {
         boxSizing: "border-box",
       }}
     >
-      {/* Back Button */}
       <Box sx={{ mb: 2 }}>
         <Button
-          variant="outlined"
+          variant="contained"
           startIcon={<ArrowBackIcon />}
           onClick={handleBackToReports}
-          sx={{ mb: 2, width: { xs: "100%", sm: "auto" }, whiteSpace: "nowrap" }}
+          sx={{ mb: 2, width: { xs: "100%", sm: "auto" }, whiteSpace: "nowrap", background: "#4385f5" }}
         >
           Back to Reports
         </Button>
       </Box>
 
-      {/* Report Form */}
       <Paper elevation={6} sx={{ p: { xs: 2, md: 4 }, mb: 3, borderRadius: 3 }}>
-        <Typography
-          variant="h4"
-          fontWeight="bold"
-          mb={1}
-          color="primary.dark"
-          sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}
-        >
+        <Typography variant="h4" fontWeight="bold" mb={1} color="primary.dark" sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
           Edit HR Compliance Report
         </Typography>
         <Divider sx={{ my: 2 }} />
         <Grid container spacing={3} mt={1}>
           <Grid item xs={12} md={4}>
-            <TextField
-              fullWidth
-              label="Company"
-              value={form.company}
-              onChange={handleChange("company")}
-              sx={{ mb: { xs: 2, md: 0 } }}
-            />
+            <TextField fullWidth label="Company" value={form.company} onChange={handleChange("company")} sx={{ mb: { xs: 2, md: 0 } }} />
           </Grid>
           <Grid item xs={12} md={4}>
-            <TextField
-              fullWidth
-              label="Contact"
-              value={form.contact}
-              onChange={handleChange("contact")}
-              sx={{ mb: { xs: 2, md: 0 } }}
-            />
+            <TextField fullWidth label="Contact" value={form.contact} onChange={handleChange("contact")} sx={{ mb: { xs: 2, md: 0 } }} />
           </Grid>
           <Grid item xs={12} md={2}>
-            <TextField
-              fullWidth
-              label="Date Submitted"
-              value={form.submitted || ""}
-              onChange={handleChange("submitted")}
-              sx={{ mb: { xs: 2, md: 0 } }}
-            />
+            <TextField fullWidth label="Date Submitted" value={form.submitted || ""} onChange={handleChange("submitted")} sx={{ mb: { xs: 2, md: 0 } }} />
           </Grid>
           <Grid item xs={6} md={1.5}>
-            <Select
-              fullWidth
-              value={form.status || ""}
-              onChange={handleChange("status")}
-              displayEmpty
-              sx={{ mb: { xs: 2, md: 0 } }}
-            >
+            <Select fullWidth value={form.status || ""} onChange={handleChange("status")} displayEmpty sx={{ mb: { xs: 2, md: 0 } }}>
               <MenuItem value="Completed">Completed</MenuItem>
               <MenuItem value="Enhanced">Enhanced</MenuItem>
               <MenuItem value="In Review">In Review</MenuItem>
@@ -179,26 +146,13 @@ export default function EditReportPage() {
             </Select>
           </Grid>
           <Grid item xs={6} md={0.5}>
-            <TextField
-              fullWidth
-              label="Score"
-              type="number"
-              value={form.score || 0}
-              onChange={handleChange("score")}
-              sx={{ mb: { xs: 2, md: 0 } }}
-            />
+            <TextField fullWidth label="Score" type="number" value={form.score || 0} onChange={handleChange("score")} sx={{ mb: { xs: 2, md: 0 } }} />
           </Grid>
         </Grid>
       </Paper>
 
-      {/* Sections */}
       <Box>
-        <Typography
-          variant="h5"
-          fontWeight={700}
-          color="primary"
-          sx={{ mb: 2, fontSize: { xs: "1.4rem", md: "1.8rem" } }}
-        >
+        <Typography variant="h5" fontWeight={700} color="primary" sx={{ mb: 2, fontSize: { xs: "1.4rem", md: "1.8rem" } }}>
           Section Details
         </Typography>
         {form?.details?.summary?.map((section, idx) => (
@@ -294,7 +248,6 @@ export default function EditReportPage() {
         ))}
       </Box>
 
-      {/* Actions */}
       <Paper elevation={0} sx={{ mt: 3, p: 2, bgcolor: "#fafcff", borderRadius: 2 }}>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="flex-end">
           <Button
@@ -302,16 +255,11 @@ export default function EditReportPage() {
             color="primary"
             onClick={handleSave}
             disabled={saving}
-            sx={{ px: 4, fontWeight: 700, width: { xs: "100%", sm: "auto" } }}
+            sx={{ px: 4, fontWeight: 700, width: { xs: "100%", sm: "auto" }, background: "#4385f5" }}
           >
             {saving ? "Saving..." : "Save Changes"}
           </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => navigate(-1)}
-            sx={{ px: 4, width: { xs: "100%", sm: "auto" } }}
-          >
+          <Button variant="contained" color="secondary" onClick={() => navigate(-1)} sx={{ px: 4, width: { xs: "100%", sm: "auto" }, background: "#4385f5" }}>
             Cancel
           </Button>
         </Stack>

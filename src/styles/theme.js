@@ -13,7 +13,8 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: "'Roboto', sans-serif",
+    fontFamily: `Helvetica Light,sans-serif`,
+    
     h1: {
       fontSize: "2.5rem",
       fontWeight: 700,
@@ -23,7 +24,7 @@ const theme = createTheme({
       fontWeight: 600,
     },
     button: {
-      textTransform: "none", // Disable ALL CAPS on buttons
+      textTransform: "none", 
       fontWeight: 600,
     },
   },

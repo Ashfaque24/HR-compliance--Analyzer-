@@ -1,9 +1,22 @@
-
 import React, { useEffect, useState } from "react";
 import {
-  Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Button, Stack, TextField, MenuItem, Select, InputAdornment,
-  useTheme, useMediaQuery,
+  Box,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Stack,
+  TextField,
+  MenuItem,
+  Select,
+  InputAdornment,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
@@ -17,8 +30,11 @@ export default function ReportPage() {
 
   const theme = useTheme();
   const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
 
-  const { submissions, loading, error } = useSelector((state) => state.reportInfo);
+  const { submissions, loading, error } = useSelector(
+    (state) => state.reportInfo
+  );
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
@@ -30,38 +46,42 @@ export default function ReportPage() {
   const reportsArray = Array.isArray(submissions) ? submissions : [];
 
   const filteredReports = reportsArray.filter((r) => {
-    const companyMatch = r.company.toLowerCase().includes(searchQuery.toLowerCase());
-    const nameMatch = r.full_name.toLowerCase().includes(searchQuery.toLowerCase());
-    const emailMatch = (r.email || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const query = searchQuery.toLowerCase();
+    const companyMatch = r.company.toLowerCase().includes(query);
+    const nameMatch = r.full_name.toLowerCase().includes(query);
+    const emailMatch = (r.email || "").toLowerCase().includes(query);
+
     const matchesSearch = companyMatch || nameMatch || emailMatch;
-    const matchesStatus = statusFilter === "All Status" || r.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "All Status" || r.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
+  if (loading) return <LoadingSpinner message="Loading reports..." />;
 
-  if (loading) {
-    return <LoadingSpinner message="Loading reports..." />;
-  }
-  
-
-
-  if (error) {
+  if (error)
     return (
       <Box sx={{ p: 5, textAlign: "center" }}>
         <Typography color="error">{error}</Typography>
       </Box>
     );
-  }
 
-  // Helper: format date or fallback
   const formatDate = (dateStr) => {
     if (!dateStr) return "-";
     return new Date(dateStr).toLocaleDateString();
   };
 
   return (
-    <Box p={{ xs: 2, sm: 4 }}>
-      <Stack direction="row" alignItems="center" spacing={1} mb={2} flexWrap="wrap">
+    <Box p={{ xs: 2, sm: 3, md: 4 }}>
+      {/* ======= PAGE HEADER ======= */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1}
+        mb={2}
+        flexWrap="wrap"
+      >
         <Icon icon="line-md:document-report" width={32} height={32} />
         <Typography variant={isSmDown ? "h5" : "h4"} fontWeight="bold" noWrap>
           Reports
@@ -70,32 +90,44 @@ export default function ReportPage() {
 
       <Button
         variant="contained"
-        color="primary"
         onClick={() => navigate("/admin/dashboard/")}
-        sx={{ mb: 3, width: isSmDown ? "100%" : "auto" }}
+        sx={{
+          mb: 3,
+          width: isSmDown ? "100%" : "auto",
+          background: "#18a16e",
+        }}
         size={isSmDown ? "small" : "medium"}
       >
         Back to Dashboard
       </Button>
 
-      <Typography mb={4} sx={{ fontSize: isSmDown ? "0.9rem" : "1rem" }}>
+      <Typography
+        mb={4}
+        sx={{ fontSize: isSmDown ? "0.9rem" : "1rem", opacity: 0.8 }}
+      >
         Review, enhance, and manage HR compliance assessment reports.
       </Typography>
 
+      {/* ======= FILTERS ======= */}
       <Stack
         direction={{ xs: "column", sm: "row" }}
         spacing={2}
         mb={3}
-        alignItems="center"
+        alignItems={{ xs: "stretch", sm: "center" }}
         flexWrap="wrap"
       >
+        {/* Search */}
         <TextField
-          placeholder="Search by company, full name or email..."
+          placeholder="Search by company, full name, or email..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           variant="outlined"
           size="small"
-          sx={{ flexGrow: 1, minWidth: 200, maxWidth: isSmDown ? "100%" : 400 }}
+          fullWidth={isSmDown}
+          sx={{
+            flexGrow: 1,
+            maxWidth: isSmDown ? "100%" : 420,
+          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -104,11 +136,14 @@ export default function ReportPage() {
             ),
           }}
         />
+
+        {/* Status Filter */}
         <Select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           size="small"
-          sx={{ width: isSmDown ? "100%" : 180, maxWidth: 180 }}
+          fullWidth={isSmDown}
+          sx={{ width: isSmDown ? "100%" : 200 }}
         >
           <MenuItem value="All Status">All Status</MenuItem>
           <MenuItem value="Completed">Completed</MenuItem>
@@ -119,11 +154,13 @@ export default function ReportPage() {
         </Select>
       </Stack>
 
+      {/* ======= TABLE ======= */}
       <TableContainer
         component={Paper}
         sx={{
           borderRadius: 2,
           overflowX: "auto",
+          boxShadow: "0px 2px 8px rgba(0,0,0,0.05)",
           "&::-webkit-scrollbar": { height: 6 },
           "&::-webkit-scrollbar-thumb": {
             backgroundColor: "#ccc",
@@ -131,58 +168,87 @@ export default function ReportPage() {
           },
         }}
       >
-        <Table sx={{ minWidth: 650 }}>
+        <Table sx={{ minWidth: 900 }}>
           <TableHead>
             <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-              <TableCell sx={{ minWidth: 150 }}><strong>Company</strong></TableCell>
-              <TableCell sx={{ minWidth: 150 }}><strong>Full Name</strong></TableCell>
-              <TableCell sx={{ minWidth: 150 }}><strong>Email</strong></TableCell>
-              <TableCell sx={{ minWidth: 150 }}><strong>Contact</strong></TableCell>
-              <TableCell sx={{ minWidth: 70 }}><strong>Score</strong></TableCell>
-              <TableCell sx={{ minWidth: 100 }}><strong>Status</strong></TableCell>
-              <TableCell sx={{ minWidth: 120 }}><strong>Date Submitted</strong></TableCell>
-              <TableCell sx={{ minWidth: 120 }}><strong>Date Started</strong></TableCell>
-              <TableCell sx={{ minWidth: 180 }}><strong>Actions</strong></TableCell>
+              {[
+                "Company",
+                "Full Name",
+                "Email",
+                "Contact",
+                "Score",
+                "Status",
+                "Date Submitted",
+                "Date Started",
+                "Actions",
+              ].map((head) => (
+                <TableCell key={head} sx={{ fontWeight: "bold" }}>
+                  {head}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
+
           <TableBody>
             {filteredReports.length ? (
               filteredReports.map((row) => (
                 <TableRow key={row.id} hover>
                   <TableCell>{row.company}</TableCell>
                   <TableCell>{row.full_name}</TableCell>
-                  <TableCell>{row.email !== "-" ? row.email : "-"}</TableCell>
-                  <TableCell>{row.contact !== "-" ? row.contact : "-"}</TableCell>
+                  <TableCell>{row.email || "-"}</TableCell>
+                  <TableCell>{row.contact || "-"}</TableCell>
                   <TableCell>{row.score}</TableCell>
                   <TableCell>{row.status}</TableCell>
                   <TableCell>{formatDate(row.submitted_at)}</TableCell>
                   <TableCell>{formatDate(row.started_at)}</TableCell>
+
+                  {/* ======= ACTION BUTTONS ======= */}
                   <TableCell>
                     <Stack
-                      direction="row"
+                      direction={isSmDown ? "column" : "row"}
                       spacing={1}
-                      flexWrap={isSmDown ? "wrap" : "nowrap"}
+                      alignItems="center"
                       justifyContent={isSmDown ? "center" : "flex-start"}
+                      sx={{ width: "100%" }}
                     >
-                      <Button
-                        size={isSmDown ? "small" : "medium"}
-                        variant="outlined"
-                        color="primary"
-                        startIcon={<Icon icon="tabler:edit" width={20} height={20} />}
-                        onClick={() => navigate(`/admin/report/edit/${row.session_uuid}`)}
-                        sx={{ minWidth: 80 }}
-                      >
-                        Edit
-                      </Button>
+                      {/* Edit */}
                       <Button
                         size={isSmDown ? "small" : "medium"}
                         variant="contained"
-                        color="secondary"
-                        startIcon={<Icon icon="mdi:eye-outline" width={20} height={20} />}
-                        onClick={() => navigate(`/admin/report/${row.session_uuid}`)}
-                        sx={{ minWidth: 110 }}
+                        startIcon={
+                          <Icon icon="tabler:edit" width={20} height={20} />
+                        }
+                        onClick={() =>
+                          navigate(`/admin/report/edit/${row.session_uuid}`)
+                        }
+                        sx={{
+                          minWidth: 90,
+                          width: isSmDown ? "100%" : "auto",
+                          background: "#18a16e",
+                          textTransform: "none",
+                        }}
                       >
-                        View Report
+                        Edit
+                      </Button>
+
+                      {/* View */}
+                      <Button
+                        size={isSmDown ? "small" : "medium"}
+                        variant="contained"
+                        startIcon={
+                          <Icon icon="mdi:eye-outline" width={20} height={20} />
+                        }
+                        onClick={() =>
+                          navigate(`/admin/report/${row.session_uuid}`)
+                        }
+                        sx={{
+                          minWidth: 90,
+                          width: isSmDown ? "100%" : "auto",
+                          background: "#18a16e",
+                          textTransform: "none",
+                        }}
+                      >
+                        View
                       </Button>
                     </Stack>
                   </TableCell>

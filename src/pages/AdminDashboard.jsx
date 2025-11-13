@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -35,7 +36,7 @@ import {
   deleteSection,
 } from "../redux/features/sectionsSlice";
 import BulkUpload from "../components/common/BulkUpload";
-import QuestionsAndOptionsAdmin from "./Questions&OptionsAdmin"; // Import your separated component
+import QuestionsAndOptionsAdmin from "./Questions&OptionsAdmin";
 
 export default function AdminDashboard() {
   const { loading, error } = useSelector((store) => store.questions);
@@ -43,30 +44,26 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const theme = useTheme();
   const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
+  const isXsDown = useMediaQuery(theme.breakpoints.down("xs"));
 
   const [editingSection, setEditingSection] = useState(false);
-
-  // ======= Section and view state =======
-  const [activeView, setActiveView] = useState("overview"); // 'overview' or 'section-detail'
+  const [activeView, setActiveView] = useState("overview");
   const [selectedSection, setSelectedSection] = useState(null);
 
-  // ======= Section modals state =======
+  // Section Modal States
   const [showAddSectionModal, setShowAddSectionModal] = useState(false);
   const [showEditSectionModal, setShowEditSectionModal] = useState(false);
   const [sectionTitle, setSectionTitle] = useState("");
   const [editSectionId, setEditSectionId] = useState(null);
   const [editSectionName, setEditSectionName] = useState("");
 
-  // ======= Redux data =======
   const sections = useSelector((state) => state.sections.items);
   const totalSections = sections.length;
 
-  // ======= Fetch on mount =======
   useEffect(() => {
     dispatch(fetchSectionsWithQuestionCount());
   }, [dispatch]);
 
-  // ======= Section CRUD handlers =======
   const handleAddSection = async () => {
     if (sectionTitle.trim()) {
       dispatch(addSection(sectionTitle.trim())).then((res) => {
@@ -100,10 +97,10 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleDeleteSection = async (sectionId) => {
-    await dispatch(deleteSection(sectionId));
+  const handleDeleteSection = async (id) => {
+    await dispatch(deleteSection(id));
     dispatch(fetchSectionsWithQuestionCount());
-    if (selectedSection && selectedSection.id === sectionId) {
+    if (selectedSection?.id === id) {
       setSelectedSection(null);
       setActiveView("overview");
     }
@@ -117,53 +114,51 @@ export default function AdminDashboard() {
         p: { xs: 2, sm: 3, md: 4 },
       }}
     >
-      {/* ======= Header ======= */}
+      {/* HEADER */}
       <Box
         sx={{
           display: "flex",
           flexDirection: { xs: "column", sm: "row" },
           justifyContent: "space-between",
+          alignItems: { xs: "flex-start", sm: "center" },
+          gap: 2,
           mb: 4,
-          gap: { xs: 2, sm: 0 },
-          alignItems: "center",
         }}
       >
-        <Typography variant="h4" fontWeight="bold" noWrap>
+        <Typography variant="h5" fontWeight="bold" sx={{ textAlign: "left" }}>
           Survey Management Dashboard
-        </Typography>
-        <Typography color="text.secondary" mt={1} noWrap>
-          Manage and view all survey sections, questions, and options.
         </Typography>
       </Box>
 
-      {/* ======= Breadcrumb Navigation ======= */}
+      {/* BREADCRUMB */}
       {selectedSection ? (
-        <Stack
-          direction="row"
-          alignItems="center"
-          flexWrap="wrap"
-          spacing={1}
-          mb={2}
-        >
+        <Stack direction="row" alignItems="center" spacing={1} mb={2}>
           <Button
-            variant="text"
+            variant="outlined"
             startIcon={<ArrowLeft />}
             onClick={() => {
               setSelectedSection(null);
               setActiveView("overview");
             }}
             size={isSmDown ? "small" : "medium"}
+            fullWidth={isSmDown}
           >
-            Back to Overview
+            Back
           </Button>
-          <ChevronRight color="#aaa" size={20} />
-          <Typography
-            fontWeight="medium"
-            noWrap
-            sx={{ maxWidth: { xs: "150px", sm: "300px" } }}
-          >
-            {selectedSection.section_name}
-          </Typography>
+
+          {!isSmDown && <ChevronRight size={20} color="#777" />}
+          {!isSmDown && (
+            <Typography
+              sx={{
+                fontWeight: 600,
+                maxWidth: 250,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {selectedSection.section_name}
+            </Typography>
+          )}
         </Stack>
       ) : (
         <Stack
@@ -175,131 +170,127 @@ export default function AdminDashboard() {
           <Button
             variant="contained"
             startIcon={<Database />}
-            onClick={() => setActiveView("overview")}
             fullWidth={isSmDown}
-            size={isSmDown ? "small" : "medium"}
+            sx={{ background: "#18a16e" }}
+            onClick={() => setActiveView("overview")}
           >
             Overview
           </Button>
-          <Box width={isSmDown ? "100%" : "auto"}>
-            <BulkUpload
-              onFileSelected={(jsonData) => {
-                console.log("Excel as JSON:", jsonData);
-              }}
-              exampleFileUrl="/assets/Compliance_Questions (1).xlsx"
-            />
-          </Box>
+
+          <BulkUpload
+            onFileSelected={(json) => console.log("Excel JSON:", json)}
+            exampleFileUrl="/assets/Compliance_Questions (1).xlsx"
+          />
+
           <Button
             variant="contained"
-            color="primary"
             startIcon={<BarChart2 />}
-            onClick={() => navigate("/admin/report")}
             fullWidth={isSmDown}
-            size={isSmDown ? "small" : "medium"}
+            sx={{ background: "#18a16e" }}
+            onClick={() => navigate("/admin/report")}
           >
             Report
           </Button>
         </Stack>
       )}
 
-      {/* ======= Overview Section: List all sections ======= */}
+      {/* OVERVIEW LIST */}
       {activeView === "overview" && !selectedSection && (
         <Stack spacing={4}>
-          <Stack direction="row" spacing={3} justifyContent="center">
-            <Paper sx={{ flex: 1, textAlign: "center", p: { xs: 2, md: 3 } }}>
-              <Database color="#1976d2" size={48} />
+          {/* Stats */}
+          <Stack direction="row" justifyContent="center">
+            <Paper sx={{ p: 3, textAlign: "center", width: "100%" }}>
+              <Database size={40} color="#1976d2" />
               <Typography variant="h6" fontWeight="bold">
                 {totalSections}
               </Typography>
               <Typography color="text.secondary">Total Sections</Typography>
             </Paper>
           </Stack>
+
+          {/* Add Section */}
           <Box
             display="flex"
             justifyContent="space-between"
-            alignItems="center"
             flexWrap="wrap"
-            gap={2}
+            gap={1}
           >
             <Typography variant="h6" fontWeight="bold">
               Survey Sections
             </Typography>
+
             <Button
               variant="contained"
               startIcon={<Plus />}
-              onClick={() => setShowAddSectionModal(true)}
               size={isSmDown ? "small" : "medium"}
+              sx={{ background: "#18a16e" }}
+              onClick={() => setShowAddSectionModal(true)}
             >
-              Add New Section
+              Add Section
             </Button>
           </Box>
+
+          {/* Section List */}
           <Stack spacing={2}>
-            {sections.map((section) => (
-              <Paper key={section.id} sx={{ p: 3 }}>
+            {sections.map((sec) => (
+              <Paper key={sec.id} sx={{ p: 2.5 }}>
                 <Box
                   display="flex"
                   flexDirection={{ xs: "column", sm: "row" }}
-                  alignItems={{ xs: "flex-start", sm: "center" }}
                   justifyContent="space-between"
-                  gap={1}
+                  alignItems={{ xs: "flex-start", sm: "center" }}
+                  gap={2}
                 >
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    flexWrap="nowrap"
-                    spacing={1}
-                  >
-                    <ChevronRight size={20} color="#aaa" />
+                  {/* Name */}
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <ChevronRight size={18} color="#aaa" />
                     <Typography
-                      variant="h6"
-                      fontWeight="medium"
                       sx={{
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
+                        fontSize: 16,
+                        fontWeight: 600,
+                        maxWidth: { xs: 200, sm: 350 },
                         textOverflow: "ellipsis",
-                        maxWidth: isSmDown ? 200 : 400,
+                        overflow: "hidden",
+                        whiteSpace: "nowrap",
                       }}
                     >
-                      {section.section_name}
+                      {sec.section_name}
                     </Typography>
                   </Stack>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    spacing={1}
-                    flexWrap="wrap"
-                    sx={{ mt: { xs: 1, sm: 0 } }}
-                  >
-                    <Typography color="text.secondary" variant="body2" noWrap>
-                      {section.questionCount || 0} questions
+
+                  {/* Actions */}
+                  <Stack direction="row" spacing={1}>
+                    <Typography variant="body2" color="text.secondary">
+                      {sec.questionCount} questions
                     </Typography>
+
                     <IconButton
-                      color="primary"
-                      size={isSmDown ? "small" : "medium"}
+                      size="small"
                       onClick={() => {
-                        setEditSectionId(section.id);
-                        setEditSectionName(section.section_name);
+                        setEditSectionId(sec.id);
+                        setEditSectionName(sec.section_name);
                         setShowEditSectionModal(true);
                       }}
                     >
-                      <Edit3 size={18} />
+                      <Edit3 size={18} color="#4385f5"/>
                     </IconButton>
+
                     <IconButton
+                      size="small"
                       color="error"
-                      size={isSmDown ? "small" : "medium"}
-                      onClick={() => handleDeleteSection(section.id)}
+                      onClick={() => handleDeleteSection(sec.id)}
                     >
                       <Trash2 size={18} />
                     </IconButton>
+
                     <IconButton
-                      color="primary"
-                      size={isSmDown ? "small" : "medium"}
+                      size="small"
                       onClick={() => {
-                        setSelectedSection(section);
+                        setSelectedSection(sec);
                         setActiveView("section-detail");
                       }}
                     >
-                      <Eye size={18} />
+                      <Eye size={18} color="#4385f5" />
                     </IconButton>
                   </Stack>
                 </Box>
@@ -309,7 +300,7 @@ export default function AdminDashboard() {
         </Stack>
       )}
 
-      {/* ======= Section Detail: Use separated Questions&OptionsAdmin ======= */}
+      {/* SECTION DETAIL */}
       {activeView === "section-detail" && selectedSection && (
         <QuestionsAndOptionsAdmin
           selectedSection={selectedSection}
@@ -319,7 +310,7 @@ export default function AdminDashboard() {
         />
       )}
 
-      {/* ======= Add Section Modal ======= */}
+      {/* ADD SECTION MODAL */}
       <Dialog
         open={showAddSectionModal}
         onClose={() => setShowAddSectionModal(false)}
@@ -327,30 +318,32 @@ export default function AdminDashboard() {
         maxWidth="xs"
         fullScreen={isSmDown}
       >
-        <DialogTitle>Add New Section</DialogTitle>
+        <DialogTitle>Add Section</DialogTitle>
         <DialogContent>
           <TextField
             label="Section Title"
+            fullWidth
             value={sectionTitle}
             onChange={(e) => setSectionTitle(e.target.value)}
-            fullWidth
             margin="normal"
-            autoFocus
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowAddSectionModal(false)}>Cancel</Button>
+          <Button onClick={() => setShowAddSectionModal(false)}>
+            Cancel
+          </Button>
           <Button
-            onClick={handleAddSection}
             variant="contained"
             startIcon={<Save />}
+            sx={{ background: "#18a16e" }}
+            onClick={handleAddSection}
           >
             Save
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* ======= Edit Section Modal ======= */}
+      {/* EDIT SECTION MODAL */}
       <Dialog
         open={showEditSectionModal}
         onClose={() => setShowEditSectionModal(false)}
@@ -362,19 +355,21 @@ export default function AdminDashboard() {
         <DialogContent>
           <TextField
             label="Section Title"
+            fullWidth
             value={editSectionName}
             onChange={(e) => setEditSectionName(e.target.value)}
-            fullWidth
             margin="normal"
-            autoFocus
           />
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={handleEditSection}
             variant="contained"
-            startIcon={editingSection ? <LoadingSpinner size={20} /> : <Save />}
+            sx={{ background: "#18a16e" }}
             disabled={editingSection}
+            startIcon={
+              editingSection ? <LoadingSpinner size={20} /> : <Save />
+            }
+            onClick={handleEditSection}
           >
             Update
           </Button>
@@ -383,3 +378,4 @@ export default function AdminDashboard() {
     </Box>
   );
 }
+

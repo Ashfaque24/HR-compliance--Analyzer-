@@ -13,6 +13,8 @@ import {
   DialogActions,
   TextField,
   Chip,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Plus, Edit3, Trash2, Save } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
@@ -34,17 +36,22 @@ export default function QuestionsAndOptionsAdmin({
   selectedSection,
   setSelectedSection,
   setActiveView,
-  isSmDown,
+  isSmDown: parentIsSmDown,
 }) {
   const dispatch = useDispatch();
   const questions = useSelector((state) => state.questions.items);
   const answers = useSelector((state) => state.answers.items);
+
+  const theme = useTheme();
+  const isSmDown = parentIsSmDown ?? useMediaQuery(theme.breakpoints.down("sm"));
 
   const [editingQuestion, setEditingQuestion] = useState(false);
   const [editingAnswer, setEditingAnswer] = useState(false);
 
   const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
   const [showEditQuestionModal, setShowEditQuestionModal] = useState(false);
+  const [showEditAnswerModal, setShowEditAnswerModal] = useState(false);
+
   const [questionText, setQuestionText] = useState("");
   const [editQuestionId, setEditQuestionId] = useState(null);
   const [editQuestionText, setEditQuestionText] = useState("");
@@ -60,7 +67,6 @@ export default function QuestionsAndOptionsAdmin({
     { id: null, option_text: "", score: "4" },
   ]);
 
-  const [showEditAnswerModal, setShowEditAnswerModal] = useState(false);
   const [editAnswerId, setEditAnswerId] = useState(null);
   const [editOptionText, setEditOptionText] = useState("");
 
@@ -91,7 +97,7 @@ export default function QuestionsAndOptionsAdmin({
             section_id: selectedSection.id,
             options,
           })
-        ).unwrap();
+        ).unwrap?.();
         setQuestionText("");
         setOptions([
           { id: null, option_text: "", score: "4" },
@@ -112,7 +118,10 @@ export default function QuestionsAndOptionsAdmin({
     setEditQuestionId(question.id);
     setEditQuestionText(question.text || question.question);
 
+    // fetch answers and wait for updated store
     await dispatch(fetchAnswersByQuestion(question.id));
+
+    // derive options from answers in store for this question
     const optionsWithIds =
       answers
         .filter((ans) => ans.question_id === question.id)
@@ -139,7 +148,6 @@ export default function QuestionsAndOptionsAdmin({
   };
 
   // Save edited question and its options
-
   const handleEditQuestion = async () => {
     if (editQuestionText.trim() && editQuestionId && selectedSection) {
       setEditingQuestion(true);
@@ -215,7 +223,7 @@ export default function QuestionsAndOptionsAdmin({
     dispatch(fetchAnswersByQuestion(questionId));
   };
 
-  // NEW: Delete option in edit modal - works for both existing and newly added options
+  // Delete option in edit modal - handles existing and new options
   const handleDeleteEditOption = async (option, index) => {
     if (option.id) {
       await dispatch(deleteAnswer(option.id));
@@ -226,7 +234,7 @@ export default function QuestionsAndOptionsAdmin({
   return (
     <>
       <Stack spacing={3}>
-        {/* Section header and add question button */}
+        {/* Header + Add */}
         <Box
           display="flex"
           flexDirection={{ xs: "column", sm: "row" }}
@@ -236,10 +244,10 @@ export default function QuestionsAndOptionsAdmin({
         >
           <Box>
             <Typography
-              variant="h5"
+              variant={isSmDown ? "h6" : "h5"}
               fontWeight="bold"
               noWrap
-              sx={{ maxWidth: 280 }}
+              sx={{ maxWidth: isSmDown ? 220 : 480 }}
             >
               {selectedSection.section_name}
             </Typography>
@@ -247,84 +255,92 @@ export default function QuestionsAndOptionsAdmin({
               {questions.length} questions in this section
             </Typography>
           </Box>
+
           <Button
             variant="contained"
             startIcon={<Plus />}
-            color="success"
             onClick={() => setShowAddQuestionModal(true)}
             size={isSmDown ? "small" : "medium"}
+            fullWidth={isSmDown}
+            sx={{ background: "#18a16e", mt: { xs: 1, sm: 0 } }}
           >
             Add New Question
           </Button>
         </Box>
 
-        {/* List all questions with their options */}
-        {questions.map((question, index) => (
-          <Paper key={question.id} sx={{ p: 2 }}>
-            <Box
-              display="flex"
-              flexDirection={{ xs: "column", sm: "row" }}
-              justifyContent="space-between"
-              alignItems={{ xs: "flex-start", sm: "center" }}
-              gap={1}
-              mb={1}
-            >
-              <Typography fontWeight="bold" mr={2} flexShrink={0}>
-                Q{index + 1}.
-              </Typography>
-              <Typography flex={1} sx={{ wordBreak: "break-word" }}>
-                {question.text || question.question}
-              </Typography>
-              <Box>
-                <IconButton
-                  color="primary"
-                  size={isSmDown ? "small" : "medium"}
-                  onClick={() => handleEditQuestionClick(question)}
-                >
-                  <Edit3 size={18} />
-                </IconButton>
-                <IconButton
-                  color="error"
-                  size={isSmDown ? "small" : "medium"}
-                  onClick={() => handleDeleteQuestion(question.id)}
-                  sx={{ ml: 1 }}
-                >
-                  <Trash2 size={18} />
-                </IconButton>
+        {/* Questions list */}
+        <Stack spacing={2}>
+          {questions.map((question, idx) => (
+            <Paper key={question.id} sx={{ p: 2 }}>
+              <Box
+                display="flex"
+                flexDirection={{ xs: "column", sm: "row" }}
+                justifyContent="space-between"
+                alignItems={{ xs: "flex-start", sm: "center" }}
+                gap={1}
+                mb={1}
+              >
+                <Box display="flex" alignItems="flex-start" gap={1}>
+                  <Typography fontWeight="bold" mr={1} flexShrink={0}>
+                    Q{idx + 1}.
+                  </Typography>
+                  <Typography flex={1} sx={{ wordBreak: "break-word" }}>
+                    {question.text || question.question}
+                  </Typography>
+                </Box>
+
+                <Box mt={{ xs: 1, sm: 0 }}>
+                  <IconButton
+                    color="primary"
+                    size={isSmDown ? "small" : "medium"}
+                    onClick={() => handleEditQuestionClick(question)}
+                  >
+                    <Edit3 size={18} />
+                  </IconButton>
+                  <IconButton
+                    color="error"
+                    size={isSmDown ? "small" : "medium"}
+                    onClick={() => handleDeleteQuestion(question.id)}
+                    sx={{ ml: 1 }}
+                  >
+                    <Trash2 size={18} />
+                  </IconButton>
+                </Box>
               </Box>
-            </Box>
-            <Box ml={{ xs: 0, sm: 4 }}>
-              <Typography variant="body2" color="text.secondary">
-                Options:
-              </Typography>
-              <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
-                {answers
-                  .filter((ans) => ans.question_id === question.id)
-                  .map((option) => (
-                    <Chip
-                      key={option.id}
-                      label={`${option.option_text} (Score: ${option.score || 0})`}
-                      size="small"
-                      sx={{
-                        bgcolor: "purple.100",
-                        color: "purple.800",
-                        mr: 1,
-                        mb: 1,
-                      }}
-                      onClick={() => {
-                        setEditAnswerId(option.id);
-                        setEditOptionText(option.option_text);
-                        setShowEditAnswerModal(true);
-                      }}
-                      onDelete={() =>
-                        handleDeleteAnswer(option.id, question.id)
-                      }
-                    />
-                  ))}
-              </Stack>
-            </Box>
-          </Paper>
-        ))}
+
+              <Box ml={{ xs: 0, sm: 4 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Options:
+                </Typography>
+                <Stack direction={{xs:"colmn",sm:"row"}} spacing={1} mt={1} flexWrap="wrap" gap={1}>
+                  {answers
+                    .filter((ans) => ans.question_id === question.id)
+                    .map((option) => (
+                      <Chip
+                        key={option.id}
+                        label={`${option.option_text} (Score: ${
+                          option.score ?? 0
+                        })`}
+                        size="small"
+                        sx={{
+                          mr: 1,
+                          mb: 1,
+                          borderRadius: 1,
+                          border: "1px solid rgba(0,0,0,0.08)",
+                        }}
+                        onClick={() => {
+                          setEditAnswerId(option.id);
+                          setEditOptionText(option.option_text);
+                          setShowEditAnswerModal(true);
+                        }}
+                        onDelete={() => handleDeleteAnswer(option.id, question.id)}
+                      />
+                    ))}
+                </Stack>
+              </Box>
+            </Paper>
+          ))}
+        </Stack>
       </Stack>
 
       {/* Add Question Modal */}
@@ -346,27 +362,31 @@ export default function QuestionsAndOptionsAdmin({
             margin="normal"
             autoFocus
           />
+
           <Typography variant="body2" mt={2}>
             Answer Options:
           </Typography>
+
           <Grid container spacing={2} mt={1}>
             {options.map((option, index) => (
               <Grid item xs={12} sm={6} key={index}>
-                <Box display="flex" alignItems="center" gap={1}>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  gap={1}
+                  sx={{ flexWrap: "wrap" }}
+                >
                   <TextField
-                    value={option.option_text || ""}
+                    value={option.option_text}
                     onChange={(e) => {
                       const newOpts = [...options];
-                      newOpts[index] = {
-                        ...option,
-                        option_text: e.target.value,
-                      };
+                      newOpts[index] = { ...option, option_text: e.target.value };
                       setOptions(newOpts);
                     }}
                     label={`Option ${index + 1}`}
                     margin="dense"
                     fullWidth
-                    sx={{ flexGrow: 1 }}
+                    sx={{ flexGrow: 1, minWidth: 0 }}
                   />
                   <TextField
                     type="number"
@@ -378,16 +398,15 @@ export default function QuestionsAndOptionsAdmin({
                     }}
                     label="Score"
                     margin="dense"
-                    sx={{ width: 100 }}
+                    sx={{ width: 100, minWidth: 0 }}
                     inputProps={{ min: 0 }}
                   />
                   {options.length > 2 && (
                     <IconButton
                       color="error"
                       size="small"
-                      onClick={() =>
-                        setOptions(options.filter((_, i) => i !== index))
-                      }
+                      onClick={() => setOptions(options.filter((_, i) => i !== index))}
+                      sx={{ ml: { xs: 0, sm: 1 } }}
                     >
                       <Trash2 size={16} />
                     </IconButton>
@@ -395,30 +414,32 @@ export default function QuestionsAndOptionsAdmin({
                 </Box>
               </Grid>
             ))}
+
             <Grid item xs={12}>
               <Button
-                onClick={() =>
-                  setOptions([
-                    ...options,
-                    { id: null, option_text: "", score: "" },
-                  ])
-                }
+                onClick={() => setOptions([...options, { id: null, option_text: "", score: "" }])}
                 startIcon={<Plus />}
                 sx={{ alignSelf: "flex-start", mt: 1 }}
                 size={isSmDown ? "small" : "medium"}
+                fullWidth={isSmDown ? true : false}
               >
                 Add Option
               </Button>
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowAddQuestionModal(false)}>Cancel</Button>
+
+        <DialogActions sx={{ flexDirection: isSmDown ? "column-reverse" : "row", gap: 1, p: 2 }}>
+          <Button onClick={() => setShowAddQuestionModal(false)} fullWidth={isSmDown}>
+            Cancel
+          </Button>
           <Button
             onClick={handleAddQuestion}
             variant="contained"
             startIcon={addingQuestion ? <LoadingSpinner size={20} /> : <Save />}
             disabled={addingQuestion}
+            sx={{ background: "#18a16e" }}
+            fullWidth={isSmDown}
           >
             Save Question
           </Button>
@@ -443,21 +464,20 @@ export default function QuestionsAndOptionsAdmin({
             margin="normal"
             autoFocus
           />
+
           <Typography mt={2} variant="body2">
             Options:
           </Typography>
+
           <Grid container spacing={2} mt={1}>
             {editOptions.map((option, index) => (
               <Grid item xs={12} sm={6} key={index}>
-                <Box display="flex" alignItems="center" gap={1}>
+                <Box display="flex" alignItems="center" gap={1} sx={{ flexWrap: "wrap" }}>
                   <TextField
                     value={option.option_text}
                     onChange={(e) => {
                       const newOptions = [...editOptions];
-                      newOptions[index] = {
-                        ...option,
-                        option_text: e.target.value,
-                      };
+                      newOptions[index] = { ...option, option_text: e.target.value };
                       setEditOptions(newOptions);
                     }}
                     label={`Option ${index + 1}`}
@@ -488,41 +508,43 @@ export default function QuestionsAndOptionsAdmin({
                 </Box>
               </Grid>
             ))}
+
             <Grid item xs={12}>
               <Button
-                onClick={() =>
-                  setEditOptions([
-                    ...editOptions,
-                    { id: null, option_text: "", score: "" },
-                  ])
-                }
+                onClick={() => setEditOptions([...editOptions, { id: null, option_text: "", score: "" }])}
                 startIcon={<Plus />}
-                sx={{ alignSelf: "flex-start", mt: 1 }}
+                sx={{
+                  mt: 1,
+                  display: "flex",
+                  alignItems: "center",
+                }}
                 size={isSmDown ? "small" : "medium"}
+                fullWidth={isSmDown}
               >
                 Add Option
               </Button>
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowEditQuestionModal(false)}>
+
+        <DialogActions sx={{ flexDirection: isSmDown ? "column-reverse" : "row", gap: 1, p: 2 }}>
+          <Button onClick={() => setShowEditQuestionModal(false)} fullWidth={isSmDown}>
             Cancel
           </Button>
           <Button
             onClick={handleEditQuestion}
             variant="contained"
-            startIcon={
-              editingQuestion ? <LoadingSpinner size={20} /> : <Save />
-            }
+            startIcon={editingQuestion ? <LoadingSpinner size={20} /> : <Save />}
             disabled={editingQuestion}
+            sx={{ background: "#18a16e" }}
+            fullWidth={isSmDown}
           >
             Save
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Edit Answer Option Modal */}
+      {/* Edit Answer Modal */}
       <Dialog
         open={showEditAnswerModal}
         onClose={() => setShowEditAnswerModal(false)}
@@ -541,13 +563,18 @@ export default function QuestionsAndOptionsAdmin({
             autoFocus
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowEditAnswerModal(false)}>Cancel</Button>
+
+        <DialogActions sx={{ flexDirection: isSmDown ? "column-reverse" : "row", gap: 1, p: 2 }}>
+          <Button onClick={() => setShowEditAnswerModal(false)} fullWidth={isSmDown}>
+            Cancel
+          </Button>
           <Button
             onClick={handleEditAnswer}
             variant="contained"
             startIcon={editingAnswer ? <LoadingSpinner size={20} /> : <Save />}
             disabled={editingAnswer}
+            fullWidth={isSmDown}
+            sx={{ background: "#18a16e" }}
           >
             Update
           </Button>

@@ -1,4 +1,3 @@
-
 // import React, { useEffect, useState } from "react";
 // import {
 //   AppBar,
@@ -217,14 +216,6 @@
 
 // export default Navbar;
 
-
-
-
-
-
-
-
-
 import React, { useEffect, useState } from "react";
 import {
   AppBar,
@@ -273,12 +264,12 @@ const Navbar = ({ hideMenu = false }) => {
     dispatch(logout());
     navigate("/admin/login");
   };
-
+// #1565c0
   return (
     <AppBar
       position="static"
       sx={{
-        backgroundColor: "#1565c0",
+        backgroundColor: "#18a16e",
         color: "white",
         boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
         borderRadius: 0,
@@ -286,7 +277,12 @@ const Navbar = ({ hideMenu = false }) => {
     >
       <Toolbar sx={{ justifyContent: "space-between", flexWrap: "wrap" }}>
         {/* Logo and Title */}
-        <Box display="flex" alignItems="center" gap={1} sx={{ flexGrow: 1, minWidth: 0 }}>
+        <Box
+          display="flex"
+          alignItems="center"
+          gap={1}
+          sx={{ flexGrow: 1, minWidth: 0 }}
+        >
           <SecurityIcon sx={{ color: "white", fontSize: { xs: 28, sm: 32 } }} />
           <Box sx={{ overflow: "hidden" }}>
             <Typography
@@ -300,7 +296,10 @@ const Navbar = ({ hideMenu = false }) => {
             </Typography>
             <Typography
               variant="body2"
-              sx={{ color: "rgba(255,255,255,0.8)", fontSize: { xs: 10, sm: 14 } }}
+              sx={{
+                color: "rgba(255,255,255,0.8)",
+                fontSize: { xs: 10, sm: 14 },
+              }}
               noWrap
             >
               AI-Powered Compliance Assessment
@@ -320,16 +319,18 @@ const Navbar = ({ hideMenu = false }) => {
             }}
           >
             <Button
-              variant="outlined"
+              variant="contained"
               sx={{
-                color: "white",
-                borderColor: "rgba(255,255,255,0.5)",
+                backgroundColor: "#FFFFFF", // white background
+                color: "#000000", // blue text for contrast
+                borderColor: "#FFFFFF", // white border
                 "&:hover": {
-                  borderColor: "white",
-                  backgroundColor: "rgba(255,255,255,0.1)",
+                  backgroundColor: "#f0f0f0", // light gray on hover
+                  borderColor: "#f0f0f0",
                 },
                 fontSize: { xs: 12, md: 14 },
                 px: 2,
+                textTransform: "none",
               }}
               onClick={() => navigate("/")}
             >
@@ -338,36 +339,22 @@ const Navbar = ({ hideMenu = false }) => {
 
             {showAdminBtn && (
               <Button
-                variant="outlined"
+                variant="contained"
                 sx={{
-                  color: "white",
-                  borderColor: "rgba(255,255,255,0.5)",
+                  backgroundColor: "#FFFFFF", // white background
+                  color: "#000000", // black text
+                  borderColor: "#FFFFFF",
                   "&:hover": {
-                    borderColor: "white",
-                    backgroundColor: "rgba(255,255,255,0.1)",
+                    backgroundColor: "#f0f0f0", // light gray hover effect
+                    borderColor: "#f0f0f0",
                   },
                   fontSize: { xs: 12, md: 14 },
                   px: 2,
+                  textTransform: "none",
                 }}
                 onClick={() => navigate("/admin/dashboard")}
               >
                 Admin
-              </Button>
-            )}
-
-            {onSummary && (
-              <Button
-                variant="contained"
-                sx={{
-                  backgroundColor: "white",
-                  color: "#1565c0",
-                  fontWeight: 500,
-                  fontSize: { xs: 12, md: 14 },
-                  px: 3,
-                  "&:hover": { backgroundColor: "#f0f0f0" },
-                }}
-              >
-                Instant Report 📄
               </Button>
             )}
 
@@ -376,11 +363,18 @@ const Navbar = ({ hideMenu = false }) => {
               <Button
                 variant="contained"
                 startIcon={<LogOut />}
-                color="error"
                 onClick={handleLogout}
                 sx={{
+                  backgroundColor: "#FFFFFF", // white background
+                  color: "#000000", // black text
+                  borderColor: "#FFFFFF",
+                  "&:hover": {
+                    backgroundColor: "#f0f0f0", // light gray hover effect
+                    borderColor: "#f0f0f0",
+                  },
                   fontSize: { xs: 12, md: 14 },
                   px: 2,
+                  textTransform: "none",
                 }}
               >
                 Logout
@@ -428,7 +422,9 @@ const Navbar = ({ hideMenu = false }) => {
                   Admin
                 </MenuItem>
               )}
-              {onSummary && <MenuItem onClick={handleMenuClose}>Instant Report 📄</MenuItem>}
+              {onSummary && (
+                <MenuItem onClick={handleMenuClose}>Instant Report 📄</MenuItem>
+              )}
 
               {isAdminPage && (
                 <MenuItem
@@ -449,5 +445,3 @@ const Navbar = ({ hideMenu = false }) => {
 };
 
 export default Navbar;
-
-
