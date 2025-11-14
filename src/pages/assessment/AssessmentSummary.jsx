@@ -3,7 +3,7 @@
 // // AssessmentSummary.jsx
 
 // Import React and needed hooks
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom"; // For accessing navigation state
 import Summary_Repo from "../../components/Summary_Repo"; // Custom component to show report details
 import { Button, Box, Typography } from "@mui/material";
@@ -18,6 +18,10 @@ export default function AssessmentSummary() {
   
   // useRef used to reference the content DOM node we want to convert into PDF
   const reportRef = useRef();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   // Safeguard: if no report exists (for example, user accessed the summary directly)
   if (!report) {

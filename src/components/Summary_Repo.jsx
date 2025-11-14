@@ -307,7 +307,10 @@ export default function Summary_Repo({ data, showFull }) {
           <Box sx={catchyOverlayStyles}>
             <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
               <InfoIcon sx={{ fontSize: 30 }} />
-              <Typography variant="h5">
+              <Typography sx={{
+                fontSize:"1rem",
+                fontWeight:"700"
+              }}>
                 For detailed report contact admin
               </Typography>
             </Box>
