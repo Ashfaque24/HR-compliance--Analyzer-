@@ -53,6 +53,15 @@ export default function AssessmentFlow() {
     return Array.from(sectionMap.values());
   }, [questions]);
 
+
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentSectionIdx]);
+
+
+
+
   useEffect(() => {
     if (surveySections.length > 0 && responses.length === 0) {
       setResponses(surveySections.map(section => section.questions.map(() => "")));

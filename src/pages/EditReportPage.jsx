@@ -11,7 +11,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-const graphTypes = ["Gauge Chart", "Star Chart", "Circular Chart"];
+const graphTypes = ["None","Gauge Chart", "Star Chart", "Circular Chart"];
 const chipStyles = { fontWeight: 600, fontSize: 13, px: 1.2 };
 
 export default function EditReportPage() {
@@ -115,7 +115,7 @@ export default function EditReportPage() {
           variant="contained"
           startIcon={<ArrowBackIcon />}
           onClick={handleBackToReports}
-          sx={{ mb: 2, width: { xs: "100%", sm: "auto" }, whiteSpace: "nowrap", background: "#4385f5" }}
+          sx={{ mb: 2, width: { xs: "100%", sm: "auto" }, whiteSpace: "nowrap", background: "#18a16e" }}
         >
           Back to Reports
         </Button>
@@ -195,6 +195,7 @@ export default function EditReportPage() {
                     onChange={handleSectionChange(idx, "graphType")}
                   >
                     <MenuItem value="">Select graph type</MenuItem>
+                    {/* <MenuItem value="None">None</MenuItem> */}
                     {graphTypes.map((gt) => (
                       <MenuItem key={gt} value={gt}>
                         {gt}

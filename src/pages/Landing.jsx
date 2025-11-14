@@ -75,7 +75,7 @@ export default function Landing() {
         flexDirection: { xs: "column", md: "row" },
         minHeight: "100vh",
         fontFamily: "Helvetica, Arial, sans-serif", // ← FONT UPDATED HERE
-        width: "100vw",
+        width: "100%",
       }}
     >
       {/* Left information panel */}
@@ -114,7 +114,7 @@ export default function Landing() {
             m: { xs: "auto", md: "unset" },
           }}
           direction="column"
-          alignItems={{ xs: "center", md: "flex-start" }}
+          alignItems= "flex-start" 
         >
           {/* Feature 1 */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>

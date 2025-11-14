@@ -259,7 +259,7 @@ export function ExecutiveSummary({ data }) {
               display: "flex",
               flexWrap: "wrap",
               gap: 1,
-              justifyContent: { xs: "center", sm: "flex-start" },
+              justifyContent:"center",
             }}
           >
             {keyInsights.map((ki, idx) => (

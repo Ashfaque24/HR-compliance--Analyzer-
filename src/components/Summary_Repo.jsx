@@ -76,7 +76,10 @@ const dummySummaryHalf = [
     completionRate: "60%",
     strengths: ["Good medical coverage", "Employee assistance programs active"],
     gaps: ["Limited wellness initiatives", "Outdated leave policy"],
-    recommendations: ["Introduce wellness programs", "Update HR policies annually"],
+    recommendations: [
+      "Introduce wellness programs",
+      "Update HR policies annually",
+    ],
     graphType: "Star Chart",
   },
 ];
@@ -153,7 +156,6 @@ function SectionCard({ section, idx, sectionsCount }) {
               {section.completionRate} Complete
             </Typography>
           </Box>
-
           <Box sx={{ minWidth: 80 }}>
             {section.graphType === "Gauge Chart" && (
               <GaugeChart score={section.score} maxScore={sectionMax} />
@@ -199,14 +201,10 @@ function SectionCard({ section, idx, sectionsCount }) {
                     index === 0
                       ? "flex-start"
                       : index === 1
-                      ? "center"
-                      : "flex-end",
+                        ? "center"
+                        : "flex-end",
                   textAlign:
-                    index === 0
-                      ? "left"
-                      : index === 1
-                      ? "center"
-                      : "right",
+                    index === 0 ? "left" : index === 1 ? "center" : "right",
                 }}
               >
                 <Typography
@@ -215,8 +213,8 @@ function SectionCard({ section, idx, sectionsCount }) {
                     key === "strengths"
                       ? green[700]
                       : key === "gaps"
-                      ? red[700]
-                      : blue[700]
+                        ? red[700]
+                        : blue[700]
                   }
                   mb={2}
                   sx={{ fontSize: { xs: 16, sm: 18 } }}
@@ -224,8 +222,8 @@ function SectionCard({ section, idx, sectionsCount }) {
                   {key === "strengths"
                     ? "Strengths"
                     : key === "gaps"
-                    ? "Gaps"
-                    : "Action Recommendations"}
+                      ? "Gaps"
+                      : "Action Recommendations"}
                 </Typography>
 
                 {section[key].length === 0 ? (
@@ -270,13 +268,11 @@ export default function Summary_Repo({ data, showFull }) {
 
   if (data.sectionRatings && data.summary) {
     mergedSummary = data.summary.map((sum) => {
-      const sec = data.sectionRatings.find(
-        (s) => s.sectionName === sum.name
-      );
+      const sec = data.sectionRatings.find((s) => s.sectionName === sum.name);
 
       return {
         ...sum,
-        graphType: sec?.graphType || "Gauge Chart",
+        graphType: sec?.graphType !== undefined ? sec.graphType : "Gauge Chart",
       };
     });
   }
@@ -311,7 +307,9 @@ export default function Summary_Repo({ data, showFull }) {
           <Box sx={catchyOverlayStyles}>
             <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
               <InfoIcon sx={{ fontSize: 30 }} />
-              <Typography variant="h5">For detailed report contact admin</Typography>
+              <Typography variant="h5">
+                For detailed report contact admin
+              </Typography>
             </Box>
 
             <Button
@@ -329,8 +327,11 @@ export default function Summary_Repo({ data, showFull }) {
 
             <Typography variant="body2" sx={{ mt: 2 }}>
               <ContactMailIcon sx={{ verticalAlign: "middle" }} /> Email:
-              <a href="mailto:ashfaque@gmail.com" style={{ marginLeft: 5 }}>
-                ashfaque@gmail.com
+              <a
+                href={`mailto:${import.meta.env.VITE_EMAIL}`}
+                style={{ marginLeft: 5 }}
+              >
+                {import.meta.env.VITE_EMAIL}
               </a>
             </Typography>
           </Box>
