@@ -7,7 +7,7 @@
         "Statutory Payments & Returns": "💲",
         "Workplace Governance": "⚖️"
       },
-      "headerBgColor": "#e3f2fd",
+      "headerBgColor": "#f0f7fa",
       "scoreBlockType": "default"
     },
     "IT & ITeS": {
@@ -16,9 +16,9 @@
         "Employee Welfare & Benefits": "💻",
         "Policy & Documentation": "💠",
         "Statutory Payments & Returns": "🛢️",
-        "Workplace Governance": "🆔🔏"
+        "Workplace Governance": "🌐"
       },
-      "headerBgColor": "#f0f7fa",
+      "headerBgColor": "#d3d7da38",
       "scoreBlockType": "circular"  
     },
     "Manufacturing": {
@@ -27,9 +27,9 @@
         "Employee Welfare & Benefits": "🧑‍🤝‍🧑",
         "Policy & Documentation": "📋",
         "Statutory Payments & Returns": "⚙️",
-        "Workplace Governance": "👁️"
+        "Workplace Governance": "🔬"
       },
-      "headerBgColor": "#f8bbd0",
+      "headerBgColor": "#FFF5EF",
       "scoreBlockType": "gauge"  
     },
     "Retail": {
@@ -40,7 +40,7 @@
         "Statutory Payments & Returns": "📊",
         "Workplace Governance": "🎧"
       },
-      "headerBgColor": "#fffde7",
+      "headerBgColor": "#FBEFF1",
       "scoreBlockType": "progress"
     },
     "Startups (Tech)": {
@@ -51,29 +51,29 @@
         "Statutory Payments & Returns": "📈",
         "Workplace Governance": "🧩"
       },
-      "headerBgColor": "#e1bee7",
+      "headerBgColor": "#F6F0FA",
       "scoreBlockType": "bar"  
     },
     "Healthcare": {
       "icons": {
-        "Registration & Licensing": "🎸",
+        "Registration & Licensing": "🧬",
         "Employee Welfare & Benefits": "🩺",
         "Policy & Documentation": "📉",
         "Statutory Payments & Returns": "✚",
         "Workplace Governance": "🧪"
       },
-      "headerBgColor": "#e8f5e9",
+      "headerBgColor": "#acff9142",
       "scoreBlockType": "health"
     },
     "Construction & Real Estate": {
       "icons": {
-        "Registration & Licensing": "✈️",
-        "Employee Welfare & Benefits": "🧪",
+        "Registration & Licensing": "🏗️",
+        "Employee Welfare & Benefits": "🚧",
         "Policy & Documentation": "🔧",
         "Statutory Payments & Returns": "🚚",
         "Workplace Governance": "⚠️"
       },
-      "headerBgColor": "#ffe0b2",
+      "headerBgColor": "#FFFBEF",
       "scoreBlockType": "construction"
     },
     "Ed-Tech": {
@@ -84,7 +84,7 @@
         "Statutory Payments & Returns": "💲",
         "Workplace Governance": "💡"
       },
-      "headerBgColor": "#f3e5f5",
+      "headerBgColor": "#ef8bf52b",
       "scoreBlockType": "testscore"
     }
   }
