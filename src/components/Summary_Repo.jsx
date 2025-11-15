@@ -1,4 +1,3 @@
-// Summary_Repo.jsx
 import React from "react";
 import {
   Box,
@@ -9,6 +8,7 @@ import {
   ListItem,
   ListItemText,
   Button,
+  Paper,
 } from "@mui/material";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
 import InfoIcon from "@mui/icons-material/Info";
@@ -18,11 +18,13 @@ import { GaugeChart } from "./graph/GaugeChart";
 import { StarRating } from "./graph/StarRating";
 import { CircularProgressWithLabel } from "./graph/CircularProgressWithLabel";
 
+// Define consistent font and color constants for styling
 const reportFont = "Helvetica, Arial, sans-serif";
 const headerBgColor = blue[50];
 const headerTextColor = blue[700];
 const borderColor = blue[200];
 
+// Styles for blurring content when full report is not shown
 const blurStyles = {
   filter: "blur(5px)",
   pointerEvents: "none",
@@ -31,6 +33,7 @@ const blurStyles = {
   overflow: "hidden",
 };
 
+// Styles for the overlay shown when report is blurred
 const catchyOverlayStyles = {
   position: "absolute",
   top: 0,
@@ -54,7 +57,7 @@ const catchyOverlayStyles = {
   fontSize: { xs: "1.2rem", sm: "1.5rem" },
 };
 
-// Dummy summary data for blurred state
+// Dummy summary data for blurred state (placeholder)
 const dummySummaryHalf = [
   {
     name: "Registration & Licensing",
@@ -84,14 +87,172 @@ const dummySummaryHalf = [
   },
 ];
 
+// Component for displaying recommended next steps
+function RecommendedNextStepsBox({ data }) {
+  // Default fallback if no steps are provided
+  const fallback = {
+    immediate: [],
+    shortTerm: [],
+    longTerm: [],
+  };
+  const steps = { ...fallback, ...(data || {}) };
+
+  // Messages shown when no steps are available
+  const emptyMessages = {
+    immediate: "No recommended immediate steps identified",
+    shortTerm: "No recommended short-term steps identified",
+    longTerm: "No recommended long-term steps identified",
+  };
+
+  // Helper to safely render list items (with fallback for empty arrays)
+  const safeList = (arr, key) =>
+    Array.isArray(arr) && arr.length ? arr : [emptyMessages[key]];
+
+  return (
+    <Box sx={{ my: { xs: 3, md: 5 }, px: { xs: 1, sm: 2 } }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 2, sm: 2.5, md: 3 },
+          bgcolor: "#fff",
+          borderRadius: 3,
+          boxShadow: "0 1px 6px rgba(80,120,200,0.07)",
+          overflow: "hidden",
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 700,
+            mb: { xs: 1.5, md: 2 },
+            fontFamily: "Helvetica, Arial, sans-serif",
+            letterSpacing: 0.2,
+            ml: 1,
+            display: "flex",
+            alignItems: "center",
+            fontSize: { xs: "1.1rem", sm: "1.25rem", md: "1.4rem" },
+          }}
+        >
+          Recommended Next Steps
+        </Typography>
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexDirection: { xs: "column", md: "row" },
+          }}
+        >
+          {[
+            // Define each step category (immediate, short-term, long-term)
+            {
+              title: "Immediate (0-30 days)",
+              key: "immediate",
+              border: "#fad7d7",
+              bg: "#fff6f6",
+              color: "#a52828",
+              listColor: "#b13d33",
+              emptyColor: "#999",
+            },
+            {
+              title: "Short-term (1-3 months)",
+              key: "shortTerm",
+              border: "#fbe9b9",
+              bg: "#fffde8",
+              color: "#a17c05",
+              listColor: "#a17c05",
+              emptyColor: "#999",
+            },
+            {
+              title: "Long-term (3-6 months)",
+              key: "longTerm",
+              border: "#adf9db",
+              bg: "#e9fbf3",
+              color: "#1e8b61",
+              listColor: "#1e8b61",
+              emptyColor: "#999",
+            },
+          ].map((sec, index) => (
+            <Box
+              sx={{
+                border: `1.5px solid ${sec.border}`,
+                bgcolor: sec.bg,
+                borderRadius: 2.5,
+                p: { xs: 2, sm: 2.5, md: 3 },
+                width: "100%",
+                minHeight: { xs: "auto", md: 180 },
+                display: "flex",
+                flexDirection: "column",
+                boxSizing: "border-box",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontWeight: 700,
+                  mb: { xs: 1, md: 1.5 },
+                  color: sec.color,
+                  fontSize: { xs: "1rem", sm: "1.1rem" },
+                }}
+              >
+                {sec.title}
+              </Typography>
+
+              <List
+                dense
+                sx={{
+                  width: "100%",
+                  color: sec.listColor,
+                  pl: { xs: 1, sm: 1.5 },
+                  "& .MuiListItem-root": {
+                    alignItems: "flex-start",
+                    pl: 0,
+                  },
+                }}
+              >
+                {safeList(steps[sec.key], sec.key).map((item, i) => {
+                  const isDefault =
+                    !Array.isArray(steps[sec.key]) || !steps[sec.key].length;
+
+                  return (
+                    <ListItem
+                      key={i}
+                      sx={{
+                        display: "list-item",
+                        listStyleType: isDefault ? "none" : "disc",
+                        pl: 0.5,
+                        py: 0,
+                      }}
+                    >
+                      <ListItemText
+                        primary={item}
+                        sx={{
+                          fontSize: { xs: 14, sm: 15 },
+                          color: isDefault ? sec.emptyColor : sec.listColor,
+                          fontStyle: isDefault ? "italic" : "normal",
+                          wordBreak: "break-word",
+                          whiteSpace: "normal",
+                        }}
+                      />
+                    </ListItem>
+                  );
+                })}
+              </List>
+            </Box>
+          ))}
+        </Box>
+      </Paper>
+    </Box>
+  );
+}
+
+// Component for rendering each section card (summary, score, strengths, gaps, recommendations)
 function SectionCard({ section, idx, sectionsCount }) {
   if (!section) return null;
-
-  const sectionMax = section.maxScore || section.mxmScore;
+  const sectionMax = section.maxScore || section.mxmScore; // Handle possible typo in maxScore
 
   return (
     <Box sx={{ mb: { xs: 3, sm: 4 }, fontFamily: reportFont }}>
-      {/* ---------- Header Card ---------- */}
+      {/* Section header with name, score, completion rate, and graph */}
       <Box
         sx={{
           bgcolor: headerBgColor,
@@ -132,7 +293,6 @@ function SectionCard({ section, idx, sectionsCount }) {
             Category {idx + 1} of {sectionsCount}
           </Typography>
         </Box>
-
         <Box
           sx={{
             display: "flex",
@@ -157,6 +317,7 @@ function SectionCard({ section, idx, sectionsCount }) {
             </Typography>
           </Box>
           <Box sx={{ minWidth: 80 }}>
+            {/* Render graph based on graphType */}
             {section.graphType === "Gauge Chart" && (
               <GaugeChart score={section.score} maxScore={sectionMax} />
             )}
@@ -172,8 +333,7 @@ function SectionCard({ section, idx, sectionsCount }) {
           </Box>
         </Box>
       </Box>
-
-      {/* ---------- Body Card ---------- */}
+      {/* Section body with strengths, gaps, and recommendations */}
       <Card
         variant="outlined"
         sx={{
@@ -184,9 +344,6 @@ function SectionCard({ section, idx, sectionsCount }) {
         }}
       >
         <Box sx={{ px: { xs: 2, sm: 4 } }}>
-          {/* ------------------------------------
-              UPDATED GRID (Perfect Alignment)
-          ------------------------------------- */}
           <Grid container spacing={3} justifyContent="space-between">
             {["strengths", "gaps", "recommendations"].map((key, index) => (
               <Grid
@@ -225,7 +382,6 @@ function SectionCard({ section, idx, sectionsCount }) {
                       ? "Gaps"
                       : "Action Recommendations"}
                 </Typography>
-
                 {section[key].length === 0 ? (
                   <Typography
                     variant="body2"
@@ -259,26 +415,27 @@ function SectionCard({ section, idx, sectionsCount }) {
   );
 }
 
+
+// Main component: Summary_Repo
 export default function Summary_Repo({ data, showFull }) {
   if (!data) return <div>No data</div>;
+  const isBlurred = !showFull; // Determine if report should be blurred
 
-  const isBlurred = !showFull;
-
+  // Merge summary and sectionRatings data for graphType
   let mergedSummary = data.summary || [];
-
   if (data.sectionRatings && data.summary) {
     mergedSummary = data.summary.map((sum) => {
       const sec = data.sectionRatings.find((s) => s.sectionName === sum.name);
-
       return {
         ...sum,
         graphType: sec?.graphType !== undefined ? sec.graphType : "Gauge Chart",
       };
     });
   }
-
   const sectionsCount = mergedSummary.length;
-  const dummySummary = dummySummaryHalf;
+  const dummySummary = dummySummaryHalf; // Placeholder for blurred state
+
+  const recommendedNextSteps = data.recommendedNextSteps;
 
   return (
     <Box
@@ -289,9 +446,11 @@ export default function Summary_Repo({ data, showFull }) {
         position: "relative",
       }}
     >
+      {/* Executive summary section */}
       <ExecutiveSummary data={data} />
 
       <Box sx={{ position: "relative" }}>
+        {/* Blurred or full summary cards */}
         <Box sx={isBlurred ? { ...blurStyles } : {}}>
           {(isBlurred ? dummySummary : mergedSummary).map((section, idx) => (
             <SectionCard
@@ -303,18 +462,23 @@ export default function Summary_Repo({ data, showFull }) {
           ))}
         </Box>
 
+        {/* Show recommended next steps only if not blurred */}
+        {!isBlurred && <RecommendedNextStepsBox data={recommendedNextSteps} />}
+
+        {/* Overlay for blurred state */}
         {isBlurred && (
           <Box sx={catchyOverlayStyles}>
             <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
               <InfoIcon sx={{ fontSize: 30 }} />
-              <Typography sx={{
-                fontSize:"1rem",
-                fontWeight:"700"
-              }}>
+              <Typography
+                sx={{
+                  fontSize: "1rem",
+                  fontWeight: "700",
+                }}
+              >
                 For detailed report contact admin
               </Typography>
             </Box>
-
             <Button
               variant="contained"
               sx={{
@@ -327,7 +491,6 @@ export default function Summary_Repo({ data, showFull }) {
             >
               Request Full Report
             </Button>
-
             <Typography variant="body2" sx={{ mt: 2 }}>
               <ContactMailIcon sx={{ verticalAlign: "middle" }} /> Email:
               <a
