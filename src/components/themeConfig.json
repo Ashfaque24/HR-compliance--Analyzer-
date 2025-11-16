@@ -1,89 +1,41 @@
 {
     "Default": {
-      "icons": {
-        "Registration & Licensing": "🏢",
-        "Employee Welfare & Benefits": "👥",
-        "Policy & Documentation": "📄",
-        "Statutory Payments & Returns": "💲",
-        "Workplace Governance": "⚖️"
-      },
+      "iconsArray": ["🏢", "👥", "📄", "💲", "⚖️"],
       "headerBgColor": "#f0f7fa",
       "scoreBlockType": "default"
     },
     "IT & ITeS": {
-      "icons": {
-        "Registration & Licensing": "🗂️",
-        "Employee Welfare & Benefits": "💻",
-        "Policy & Documentation": "💠",
-        "Statutory Payments & Returns": "🛢️",
-        "Workplace Governance": "🌐"
-      },
+      "iconsArray": ["🗂️", "💻", "💠", "🛢️", "🌐"],
       "headerBgColor": "#d3d7da38",
-      "scoreBlockType": "circular"  
+      "scoreBlockType": "circular"
     },
     "Manufacturing": {
-      "icons": {
-        "Registration & Licensing": "🏭",
-        "Employee Welfare & Benefits": "🧑‍🤝‍🧑",
-        "Policy & Documentation": "📋",
-        "Statutory Payments & Returns": "⚙️",
-        "Workplace Governance": "🔬"
-      },
+      "iconsArray": ["🏭", "🧑‍🤝‍🧑", "📋", "⚙️", "🔬"],
       "headerBgColor": "#FFF5EF",
-      "scoreBlockType": "gauge"  
+      "scoreBlockType": "gauge"
     },
     "Retail": {
-      "icons": {
-        "Registration & Licensing": "🏬",
-        "Employee Welfare & Benefits": "🛒",
-        "Policy & Documentation": "➖",
-        "Statutory Payments & Returns": "📊",
-        "Workplace Governance": "🎧"
-      },
+      "iconsArray": ["🏬", "🛒", "➖", "📊", "🎧"],
       "headerBgColor": "#FBEFF1",
       "scoreBlockType": "progress"
     },
     "Startups (Tech)": {
-      "icons": {
-        "Registration & Licensing": "🚀",
-        "Employee Welfare & Benefits": "☕",
-        "Policy & Documentation": "📄",
-        "Statutory Payments & Returns": "📈",
-        "Workplace Governance": "🧩"
-      },
+      "iconsArray": ["🚀", "☕", "📄", "📈", "🧩"],
       "headerBgColor": "#F6F0FA",
-      "scoreBlockType": "bar"  
+      "scoreBlockType": "bar"
     },
     "Healthcare": {
-      "icons": {
-        "Registration & Licensing": "🧬",
-        "Employee Welfare & Benefits": "🩺",
-        "Policy & Documentation": "📉",
-        "Statutory Payments & Returns": "✚",
-        "Workplace Governance": "🧪"
-      },
+      "iconsArray": ["🧬", "🩺", "📉", "✚", "🧪"],
       "headerBgColor": "#acff9142",
       "scoreBlockType": "health"
     },
     "Construction & Real Estate": {
-      "icons": {
-        "Registration & Licensing": "🏗️",
-        "Employee Welfare & Benefits": "🚧",
-        "Policy & Documentation": "🔧",
-        "Statutory Payments & Returns": "🚚",
-        "Workplace Governance": "⚠️"
-      },
+      "iconsArray": ["🏗️", "🚧", "🔧", "🚚", "⚠️"],
       "headerBgColor": "#FFFBEF",
       "scoreBlockType": "construction"
     },
     "Ed-Tech": {
-      "icons": {
-        "Registration & Licensing": "🎓",
-        "Employee Welfare & Benefits": "👤",
-        "Policy & Documentation": "📖",
-        "Statutory Payments & Returns": "💲",
-        "Workplace Governance": "💡"
-      },
+      "iconsArray": ["🎓", "👤", "📖", "💲", "💡"],
       "headerBgColor": "#ef8bf52b",
       "scoreBlockType": "testscore"
     }

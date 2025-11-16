@@ -291,7 +291,12 @@
 
 
 
-// code after the theam based score card toooo 
+
+
+
+
+
+// code after setting correct icon for all sections 
 
 import React from "react";
 import { Box, Typography, Paper, Divider, Chip } from "@mui/material";
@@ -334,26 +339,35 @@ function getRiskLevel(score, max) {
   };
 }
 
-// Selects the correct ScoreBlock component for the theme
 function renderScoreBlock(score, maxScore, type) {
   switch (type) {
-    case "default":      return <DefaultScoreBlock score={score} maxScore={maxScore} />;
-    case "circular":     return <CircularScoreBlock score={score} maxScore={maxScore} />;
-    case "gauge":        return <GaugeScoreBlock score={score} maxScore={maxScore} />;
-    case "bar":          return <BarScoreBlock score={score} maxScore={maxScore} />;
-    case "progress":     return <ProgressScoreBlock score={score} maxScore={maxScore} />;
-    case "health":       return <HealthScoreBlock score={score} maxScore={maxScore} />;
-    case "construction": return <ConstructionScoreBlock score={score} maxScore={maxScore} />;
-    case "testscore":    return <TestScoreBlock score={score} maxScore={maxScore} />;
-    default:             return <DefaultScoreBlock score={score} maxScore={maxScore} />;
+    case "default":
+      return <DefaultScoreBlock score={score} maxScore={maxScore} />;
+    case "circular":
+      return <CircularScoreBlock score={score} maxScore={maxScore} />;
+    case "gauge":
+      return <GaugeScoreBlock score={score} maxScore={maxScore} />;
+    case "bar":
+      return <BarScoreBlock score={score} maxScore={maxScore} />;
+    case "progress":
+      return <ProgressScoreBlock score={score} maxScore={maxScore} />;
+    case "health":
+      return <HealthScoreBlock score={score} maxScore={maxScore} />;
+    case "construction":
+      return <ConstructionScoreBlock score={score} maxScore={maxScore} />;
+    case "testscore":
+      return <TestScoreBlock score={score} maxScore={maxScore} />;
+    default:
+      return <DefaultScoreBlock score={score} maxScore={maxScore} />;
   }
 }
 
 export function ExecutiveSummary({ data, themeConfig }) {
-  // Data destructuring with defaults
   const { sectionRatings = [], overAllScore, maxmScore, keyInsights = [] } = data;
   const risk = getRiskLevel(overAllScore, maxmScore);
-  const iconMap = themeConfig?.icons || {};
+
+  // Get iconsArray from themeConfig, default to empty array if not provided
+  const iconsArray = themeConfig?.iconsArray ?? [];
 
   return (
     <Paper
@@ -366,22 +380,16 @@ export function ExecutiveSummary({ data, themeConfig }) {
         mb: 4,
       }}
     >
-      {/* Title */}
       <Typography
         align="center"
         fontWeight={700}
-        sx={{
-          fontSize: { xs: 26, sm: 34 },
-          mb: 2,
-        }}
+        sx={{ fontSize: { xs: 26, sm: 34 }, mb: 2 }}
       >
         Executive Summary
       </Typography>
 
-      {/* Main score block (dynamic by theme) */}
       {renderScoreBlock(overAllScore, maxmScore, themeConfig?.scoreBlockType || "default")}
 
-      {/* Risk indicator */}
       <Box sx={{ display: "flex", justifyContent: "center", mb: 4, mt: 3 }}>
         <Box
           sx={{
@@ -412,18 +420,13 @@ export function ExecutiveSummary({ data, themeConfig }) {
             {risk.icon}
           </Box>
           <Typography
-            sx={{
-              fontWeight: 600,
-              color: risk.color,
-              fontSize: { xs: 14, sm: 16 },
-            }}
+            sx={{ fontWeight: 600, color: risk.color, fontSize: { xs: 14, sm: 16 } }}
           >
             {risk.text}
           </Typography>
         </Box>
       </Box>
 
-      {/* Section ratings grid overview */}
       <Box
         sx={{
           display: "grid",
@@ -441,6 +444,10 @@ export function ExecutiveSummary({ data, themeConfig }) {
         {sectionRatings.map((sec, idx) => {
           const max = sec.maxScore ?? sec.mxmScore ?? "?";
           const percentage = max !== "?" ? (sec.score / max) * 100 : 0;
+
+          // Assign icon from theme iconsArray if available, else default to 📊
+          const icon = idx < iconsArray.length ? iconsArray[idx] : "📊";
+
           return (
             <Box
               key={idx}
@@ -463,7 +470,7 @@ export function ExecutiveSummary({ data, themeConfig }) {
                   fontSize: 28,
                 }}
               >
-                {iconMap[sec.sectionName] || "📊"}
+                {icon}
               </Box>
               <Typography sx={{ fontWeight: 700, fontSize: 26 }}>
                 {sec.score}/{max}
@@ -501,7 +508,6 @@ export function ExecutiveSummary({ data, themeConfig }) {
         })}
       </Box>
 
-      {/* Key Insights */}
       {keyInsights.length > 0 && (
         <Box
           sx={{
@@ -548,4 +554,3 @@ export function ExecutiveSummary({ data, themeConfig }) {
     </Paper>
   );
 }
-
