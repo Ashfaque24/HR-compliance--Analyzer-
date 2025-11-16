@@ -14,6 +14,13 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 const graphTypes = ["None","Gauge Chart", "Star Chart", "Circular Chart"];
 const chipStyles = { fontWeight: 600, fontSize: 13, px: 1.2 };
 
+// Helper structure for recommended next steps
+const blankNextSteps = {
+  immediate: [],
+  shortTerm: [],
+  longTerm: [],
+};
+
 export default function EditReportPage() {
   const { id: session_uuid } = useParams();
   const dispatch = useDispatch();
@@ -33,9 +40,10 @@ export default function EditReportPage() {
 
   useEffect(() => {
     if (report) {
-      // Deep clone to avoid mutation issues
       let updatedReport = JSON.parse(JSON.stringify(report));
-      
+      // Ensure recommendedNextSteps is present in form
+      updatedReport.recommendedNextSteps = updatedReport.recommendedNextSteps || blankNextSteps;
+
       if (updatedReport.details?.summary && updatedReport.details?.sectionRatings) {
         updatedReport.details.summary = updatedReport.details.summary.map((section) => {
           const ratingData = updatedReport.details.sectionRatings.find(
@@ -43,11 +51,11 @@ export default function EditReportPage() {
           );
           return {
             ...section,
-            graphType: ratingData?.graphType || section.graphType || "Gauge Chart",
+            graphType: ratingData?.graphType ?? section.graphType ?? "None",
           };
         });
       }
-      
+
       setForm(updatedReport);
     }
   }, [report]);
@@ -81,6 +89,17 @@ export default function EditReportPage() {
         summary: prev.details.summary.map((sec, i) =>
           i === idx ? { ...sec, [field]: value } : sec
         ),
+      },
+    }));
+  };
+
+  // New: handle changes for recommendedNextSteps fields
+  const handleNextStepChange = (type) => (e) => {
+    setForm((prev) => ({
+      ...prev,
+      recommendedNextSteps: {
+        ...prev.recommendedNextSteps,
+        [type]: e.target.value.split("\n"),
       },
     }));
   };
@@ -195,7 +214,6 @@ export default function EditReportPage() {
                     onChange={handleSectionChange(idx, "graphType")}
                   >
                     <MenuItem value="">Select graph type</MenuItem>
-                    {/* <MenuItem value="None">None</MenuItem> */}
                     {graphTypes.map((gt) => (
                       <MenuItem key={gt} value={gt}>
                         {gt}
@@ -248,6 +266,61 @@ export default function EditReportPage() {
           </Accordion>
         ))}
       </Box>
+
+      {/* NEW: Recommended Next Steps UI */}
+      <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 3, bgcolor: "#f8fcff" }}>
+        <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>
+          Recommended Next Steps
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={4}>
+            <Box sx={{borderRadius: 2, p: 2, minHeight: 175 }}>
+              <Typography fontWeight="bold" sx={{ mb: 1, color: "#b80e0e" }}>
+                Immediate (0-30 days)
+              </Typography>
+              <TextField
+                multiline
+                minRows={4}
+                fullWidth
+                placeholder="List immediate actions, one per line"
+                value={form.recommendedNextSteps?.immediate?.join('\n') || ''}
+                onChange={handleNextStepChange("immediate")}
+              />
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Box sx={{borderRadius: 2, p: 2, minHeight: 175 }}>
+              <Typography fontWeight="bold" sx={{ mb: 1, color: "#cc9700" }}>
+                Short-term (1-3 months)
+              </Typography>
+              <TextField
+                multiline
+                minRows={4}
+                fullWidth
+                placeholder="List short-term actions, one per line"
+                value={form.recommendedNextSteps?.shortTerm?.join('\n') || ''}
+                onChange={handleNextStepChange("shortTerm")}
+              />
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Box sx={{ borderRadius: 2, p: 2, minHeight: 175 }}>
+              <Typography fontWeight="bold" sx={{ mb: 1, color: "#229e83" }}>
+                Long-term (3-6 months)
+              </Typography>
+              <TextField
+                multiline
+                minRows={4}
+                fullWidth
+                placeholder="List long-term actions, one per line"
+                value={form.recommendedNextSteps?.longTerm?.join('\n') || ''}
+                onChange={handleNextStepChange("longTerm")}
+              />
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+      {/* END: Recommended Next Steps UI */}
 
       <Paper elevation={0} sx={{ mt: 3, p: 2, bgcolor: "#fafcff", borderRadius: 2 }}>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="flex-end">
