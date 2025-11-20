@@ -1,5 +1,3 @@
-//report view with theme 
-
 // import React, { useEffect, useRef, useState } from "react";
 // import { useParams, useNavigate } from "react-router-dom";
 // import { useDispatch, useSelector } from "react-redux";
@@ -22,15 +20,20 @@
 // import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 // import jsPDF from "jspdf";
 // import html2canvas from "html2canvas";
-// import themeConfig from "../components/themeConfig.json"; 
+// import themeConfig from "../components/themeConfig.json";
+
+// import { getImageUrl } from "../utils/imageHelper";
 
 // export default function ReportView() {
 //   const { id } = useParams();
 //   const dispatch = useDispatch();
 //   const navigate = useNavigate();
-//   const reportRef = useRef();
 
-//   // Dropdown state for theme selection
+//   const reportRef = useRef();
+//   // We will now point these refs to the HIDDEN, full-size elements.
+//   const frontImageRef = useRef();
+//   const backImageRef = useRef();
+
 //   const dropdownOptions = Object.keys(themeConfig);
 //   const [selectedDomain, setSelectedDomain] = useState("Default");
 
@@ -56,110 +59,128 @@
 //       </Box>
 //     );
 
-//   // Get current theme config, fallback to Default if not found
+//   const details = report.details || {};
+
 //   const currentThemeConfig = themeConfig[selectedDomain] || themeConfig["Default"];
 
-//   // PDF download function
-//   const handleDownloadPdf = () => {
-//     const input = reportRef.current;
-//     if (!input) return;
+//   const handleDownloadPdf = async () => {
+//     // Use presence of relative URLs for existence checks
+//     const frontExists = !!details.frontPageImage && !!frontImageRef.current;
+//     const backExists = !!details.backPageImage && !!backImageRef.current;
 
-//     const margin = 56; // ~20mm
+//     if (!frontExists && !backExists) {
+//       const proceed = window.confirm(
+//         "No cover pages found. Do you want to download the report without cover pages?"
+//       );
+//       if (!proceed) return;
+//     }
+
 //     const pdf = new jsPDF({
 //       orientation: "portrait",
 //       unit: "pt",
 //       format: "a4",
 //     });
 
+//     const margin = 56; // 20mm margin (approx)
 //     const pdfWidth = pdf.internal.pageSize.getWidth();
 //     const pdfHeight = pdf.internal.pageSize.getHeight();
 //     const contentWidth = pdfWidth - margin * 2;
+//     const contentHeight = pdfHeight - margin * 2;
 
-//     html2canvas(input, {
-//       scale: 3,
-//       useCORS: true,
-//       scrollX: 0,
-//       scrollY: -window.scrollY,
-//       backgroundColor: "#ffffff",
-//     }).then((canvas) => {
-//       const imgData = canvas.toDataURL("image/png", 1.0);
-//       const imgWidth = contentWidth;
-//       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+//     const captureElement = async (element) => {
+//       if (!element) return null;
+//       // Scale is set high (3) for better resolution capture
+//       return await html2canvas(element, {
+//         scale: 3, 
+//         useCORS: true,
+//         scrollX: 0,
+//         scrollY: -window.scrollY,
+//         backgroundColor: "#ffffff",
+//       });
+//     };
 
-//       const maxContentHeight = pdfHeight * 2 - margin * 2;
-//       let scaledHeight = imgHeight;
-
-//       if (imgHeight > maxContentHeight) {
-//         const scaleFactor = maxContentHeight / imgHeight;
-//         scaledHeight = imgHeight * scaleFactor;
+//     try {
+//       // Front cover
+//       if (frontExists) {
+//         const frontCanvas = await captureElement(frontImageRef.current);
+//         pdf.addImage(
+//           frontCanvas.toDataURL("image/png"),
+//           "PNG",
+//           margin,
+//           margin,
+//           contentWidth,
+//           contentHeight
+//         );
 //       }
 
-//       if (scaledHeight <= pdfHeight - margin * 2) {
-//         // Fits in one page
-//         const y = (pdfHeight - scaledHeight) / 2;
-//         pdf.addImage(imgData, "PNG", margin, y, imgWidth, scaledHeight, "", "FAST");
-//       } else {
-//         // Split into two pages
-//         const firstPageHeight = pdfHeight - margin * 2;
-//         const canvasPageHeight = (canvas.height * firstPageHeight) / scaledHeight;
+//       // Report content
+//       if (reportRef.current) {
+//         if (frontExists) pdf.addPage();
 
-//         // First page canvas
-//         const firstCanvas = document.createElement("canvas");
-//         firstCanvas.width = canvas.width;
-//         firstCanvas.height = canvasPageHeight;
-//         const ctx1 = firstCanvas.getContext("2d");
-//         ctx1.drawImage(
-//           canvas,
-//           0,
-//           0,
-//           canvas.width,
-//           canvasPageHeight,
-//           0,
-//           0,
-//           canvas.width,
-//           canvasPageHeight
-//         );
-//         const firstImg = firstCanvas.toDataURL("image/png", 1.0);
-//         pdf.addImage(firstImg, "PNG", margin, margin, imgWidth, firstPageHeight, "", "FAST");
+//         const reportCanvas = await captureElement(reportRef.current);
+//         let totalHeight = reportCanvas.height;
+//         const pageHeightPx = (contentHeight * reportCanvas.width) / contentWidth;
+//         let renderedHeight = 0;
+
+//         while (renderedHeight < totalHeight) {
+//           const canvasPage = document.createElement("canvas");
+//           canvasPage.width = reportCanvas.width;
+//           canvasPage.height = Math.min(pageHeightPx, totalHeight - renderedHeight);
+//           const ctx = canvasPage.getContext("2d");
+//           ctx.drawImage(
+//             reportCanvas,
+//             0,
+//             renderedHeight,
+//             reportCanvas.width,
+//             canvasPage.height,
+//             0,
+//             0,
+//             reportCanvas.width,
+//             canvasPage.height
+//           );
+
+//           const imgData = canvasPage.toDataURL("image/png");
+//           if (renderedHeight > 0) pdf.addPage();
+//           const scaleFactor = contentWidth / canvasPage.width;
+//           pdf.addImage(
+//             imgData,
+//             "PNG",
+//             margin,
+//             margin,
+//             contentWidth,
+//             canvasPage.height * scaleFactor
+//           );
+
+//           renderedHeight += canvasPage.height;
+//         }
+//       }
+
+//       // Back cover
+//       if (backExists) {
 //         pdf.addPage();
-
-//         // Second page canvas
-//         const secondCanvas = document.createElement("canvas");
-//         secondCanvas.width = canvas.width;
-//         secondCanvas.height = canvas.height - canvasPageHeight;
-//         const ctx2 = secondCanvas.getContext("2d");
-//         ctx2.drawImage(
-//           canvas,
-//           0,
-//           canvasPageHeight,
-//           canvas.width,
-//           canvas.height - canvasPageHeight,
-//           0,
-//           0,
-//           canvas.width,
-//           canvas.height - canvasPageHeight
+//         const backCanvas = await captureElement(backImageRef.current);
+//         pdf.addImage(
+//           backCanvas.toDataURL("image/png"),
+//           "PNG",
+//           margin,
+//           margin,
+//           contentWidth,
+//           contentHeight
 //         );
-//         const secondImg = secondCanvas.toDataURL("image/png", 1.0);
-//         const secondPageHeight = scaledHeight - firstPageHeight;
-//         pdf.addImage(secondImg, "PNG", margin, margin, imgWidth, secondPageHeight, "", "FAST");
 //       }
 
 //       pdf.save(`report_${report.id}.pdf`);
-//     });
+//     } catch (error) {
+//       console.error("Error generating PDF:", error);
+//       alert("Failed to generate PDF");
+//     }
 //   };
 
 //   const submittedDate = report.submitted || "N/A";
 //   const contactInfo = report.contact || "N/A";
 
 //   return (
-//     <Box
-//       sx={{
-//         p: { xs: 2, sm: 4 },
-//         maxWidth: 1200,
-//         mx: "auto",
-//         width: "100%",
-//       }}
-//     >
+//     <Box sx={{ p: { xs: 2, sm: 4 }, maxWidth: 1200, mx: "auto", width: "100%" }}>
 //       {/* Top Buttons and Dropdown */}
 //       <Box
 //         sx={{
@@ -172,20 +193,19 @@
 //           alignItems: "center",
 //         }}
 //       >
-//         <Box sx={{
-//           display: "flex",
-//           flexDirection: { xs: "column", sm: "row" },
-//           gap: 2,
-//           width: { xs: "100%", sm: "auto" },
-//         }}>
+//         <Box
+//           sx={{
+//             display: "flex",
+//             flexDirection: { xs: "column", sm: "row" },
+//             gap: 2,
+//             width: { xs: "100%", sm: "auto" },
+//           }}
+//         >
 //           <Button
 //             variant="contained"
 //             onClick={() => navigate(-1)}
 //             startIcon={<ArrowBackIcon />}
-//             sx={{
-//               width: { xs: "100%", sm: "auto" },
-//               background: "#18a16e",
-//             }}
+//             sx={{ width: { xs: "100%", sm: "auto" }, background: "#18a16e" }}
 //           >
 //             Back to Reports
 //           </Button>
@@ -193,21 +213,12 @@
 //             variant="contained"
 //             color="primary"
 //             onClick={handleDownloadPdf}
-//             sx={{
-//               width: { xs: "100%", sm: "auto" },
-//               background: "#18a16e",
-//             }}
+//             sx={{ width: { xs: "100%", sm: "auto" }, background: "#18a16e" }}
 //           >
 //             Download PDF
 //           </Button>
 //         </Box>
-//         {/* Responsive Dropdown */}
-//         <FormControl
-//           sx={{
-//             minWidth: { xs: "100%", sm: 200 },
-//             width: { xs: "100%", sm: 200 },
-//           }}
-//         >
+//         <FormControl sx={{ minWidth: { xs: "100%", sm: 200 }, width: { xs: "100%", sm: 200 } }}>
 //           <InputLabel id="domain-select-label">Themes</InputLabel>
 //           <Select
 //             labelId="domain-select-label"
@@ -225,7 +236,59 @@
 //         </FormControl>
 //       </Box>
 
-//       {/* Report Section */}
+//       {/* --- VISIBLE THUMBNAIL (Front Cover) --- */}
+//       <Box sx={{ mb: 2, width: "100%", textAlign: "center" }}>
+//         {details.frontPageImage && (
+//           <>
+//             <img
+//               src={getImageUrl(details.frontPageImage)}
+//               alt="Front Cover Thumbnail"
+//               style={{ 
+//                 maxWidth: 150, // Display as small thumbnail
+//                 maxHeight: 200, // Display as small thumbnail
+//                 objectFit: "contain",
+//                 cursor: 'pointer',
+//                 boxShadow: '0 4px 8px rgba(0,0,0,0.1)' 
+//               }}
+//             />
+//             <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+//               Front Cover (Thumbnail)
+//             </Typography>
+//           </>
+//         )}
+//       </Box>
+
+//       {/* --- HIDDEN FULL-SIZE ELEMENT FOR PDF CAPTURE (Front Cover) --- */}
+//       <Box 
+//         ref={frontImageRef} 
+//         sx={{
+//           position: 'fixed',
+//           top: -9999,      // Hide off-screen
+//           left: -9999,
+//           width: '794px',   // A4 width approximation (96 DPI)
+//           height: '1123px', // A4 height approximation (96 DPI)
+//           overflow: 'hidden',
+//           zIndex: -1, // Ensure it doesn't interfere with interaction
+//         }}
+//       >
+//         {details.frontPageImage && (
+//           <img
+//             src={getImageUrl(details.frontPageImage)}
+//             alt="Front Cover Full Resolution"
+//             // The image fills the hidden A4-sized box
+//             style={{ 
+//               width: '100%', 
+//               height: '100%', 
+//               objectFit: 'contain'
+//             }}
+//             crossOrigin="anonymous" // Important for html2canvas with external images
+//           />
+//         )}
+//       </Box>
+//       {/* --- END HIDDEN FRONT COVER --- */}
+
+
+//       {/* Main Report Content */}
 //       <Box ref={reportRef} sx={{ width: "100%" }}>
 //         <Card
 //           elevation={4}
@@ -238,21 +301,11 @@
 //           }}
 //         >
 //           <CardContent>
-//             <Typography
-//               variant="h4"
-//               fontWeight="bold"
-//               gutterBottom
-//               sx={{ fontSize: { xs: "1.5rem", sm: "2.125rem" } }}
-//             >
+//             <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: "1.5rem", sm: "2.125rem" } }}>
 //               {report.company}
 //             </Typography>
 //             <Divider sx={{ my: 1 }} />
-//             <Stack
-//               direction={{ xs: "column", sm: "row" }}
-//               spacing={3}
-//               alignItems={{ xs: "flex-start", sm: "center" }}
-//               sx={{ mb: 1 }}
-//             >
+//             <Stack direction={{ xs: "column", sm: "row" }} spacing={3} alignItems={{ xs: "flex-start", sm: "center" }} sx={{ mb: 1 }}>
 //               <Typography sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}>
 //                 <b>ID:</b> {report.id}
 //               </Typography>
@@ -268,15 +321,62 @@
 //             </Typography>
 //           </CardContent>
 //         </Card>
-
-//         {/* Summary Report, now with themeConfig passed */}
-//         <Summary_Repo data={report.details} showFull={true} themeConfig={currentThemeConfig} />
+//         <Summary_Repo data={details} showFull themeConfig={currentThemeConfig} />
 //       </Box>
+
+//       {/* --- VISIBLE THUMBNAIL (Back Cover) --- */}
+//       <Box sx={{ mt: 2, width: "100%", textAlign: "center" }}>
+//         {details.backPageImage && (
+//           <>
+//             <img
+//               src={getImageUrl(details.backPageImage)}
+//               alt="Back Cover Thumbnail"
+//               style={{ 
+//                 maxWidth: 150, // Display as small thumbnail
+//                 maxHeight: 200, // Display as small thumbnail
+//                 objectFit: "contain",
+//                 cursor: 'pointer',
+//                 boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+//               }}
+//             />
+//             <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+//               Back Cover (Thumbnail)
+//             </Typography>
+//           </>
+//         )}
+//       </Box>
+
+//       {/* --- HIDDEN FULL-SIZE ELEMENT FOR PDF CAPTURE (Back Cover) --- */}
+//       <Box 
+//         ref={backImageRef} 
+//         sx={{
+//           position: 'fixed',
+//           top: -9999,      // Hide off-screen
+//           left: -9999,
+//           width: '794px',   // A4 width approximation (96 DPI)
+//           height: '1123px', // A4 height approximation (96 DPI)
+//           overflow: 'hidden',
+//           zIndex: -1, 
+//         }}
+//       >
+//         {details.backPageImage && (
+//           <img
+//             src={getImageUrl(details.backPageImage)}
+//             alt="Back Cover Full Resolution"
+//             // The image fills the hidden A4-sized box
+//             style={{ 
+//               width: '100%', 
+//               height: '100%', 
+//               objectFit: 'contain'
+//             }}
+//             crossOrigin="anonymous" // Important for html2canvas with external images
+//           />
+//         )}
+//       </Box>
+//       {/* --- END HIDDEN BACK COVER --- */}
 //     </Box>
 //   );
 // }
-
-
 
 
 
@@ -298,11 +398,15 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Chip, // Added Chip for a nice indicator
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // Icon for success
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import themeConfig from "../components/themeConfig.json";
+
+import { getImageUrl } from "../utils/imageHelper";
 
 export default function ReportView() {
   const { id } = useParams();
@@ -310,6 +414,7 @@ export default function ReportView() {
   const navigate = useNavigate();
 
   const reportRef = useRef();
+  // These refs point to the HIDDEN, full-size elements for PDF generation.
   const frontImageRef = useRef();
   const backImageRef = useRef();
 
@@ -338,11 +443,14 @@ export default function ReportView() {
       </Box>
     );
 
+  const details = report.details || {};
+
   const currentThemeConfig = themeConfig[selectedDomain] || themeConfig["Default"];
 
   const handleDownloadPdf = async () => {
-    const frontExists = !!(report.frontPageImage && frontImageRef.current);
-    const backExists = !!(report.backPageImage && backImageRef.current);
+    // Use presence of relative URLs for existence checks
+    const frontExists = !!details.frontPageImage && !!frontImageRef.current;
+    const backExists = !!details.backPageImage && !!backImageRef.current;
 
     if (!frontExists && !backExists) {
       const proceed = window.confirm(
@@ -357,7 +465,7 @@ export default function ReportView() {
       format: "a4",
     });
 
-    const margin = 56; // 20mm margin
+    const margin = 56; // 20mm margin (approx)
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
     const contentWidth = pdfWidth - margin * 2;
@@ -365,8 +473,9 @@ export default function ReportView() {
 
     const captureElement = async (element) => {
       if (!element) return null;
+      // Scale is set high (3) for better resolution capture
       return await html2canvas(element, {
-        scale: 3,
+        scale: 3, 
         useCORS: true,
         scrollX: 0,
         scrollY: -window.scrollY,
@@ -378,7 +487,14 @@ export default function ReportView() {
       // Front cover
       if (frontExists) {
         const frontCanvas = await captureElement(frontImageRef.current);
-        pdf.addImage(frontCanvas.toDataURL("image/png"), "PNG", margin, margin, contentWidth, contentHeight);
+        pdf.addImage(
+          frontCanvas.toDataURL("image/png"),
+          "PNG",
+          margin,
+          margin,
+          contentWidth,
+          contentHeight
+        );
       }
 
       // Report content
@@ -387,7 +503,7 @@ export default function ReportView() {
 
         const reportCanvas = await captureElement(reportRef.current);
         let totalHeight = reportCanvas.height;
-        const pageHeightPx = (contentHeight * reportCanvas.width) / contentWidth; // approx convert PDF pt to canvas px height
+        const pageHeightPx = (contentHeight * reportCanvas.width) / contentWidth;
         let renderedHeight = 0;
 
         while (renderedHeight < totalHeight) {
@@ -410,7 +526,14 @@ export default function ReportView() {
           const imgData = canvasPage.toDataURL("image/png");
           if (renderedHeight > 0) pdf.addPage();
           const scaleFactor = contentWidth / canvasPage.width;
-          pdf.addImage(imgData, "PNG", margin, margin, contentWidth, canvasPage.height * scaleFactor);
+          pdf.addImage(
+            imgData,
+            "PNG",
+            margin,
+            margin,
+            contentWidth,
+            canvasPage.height * scaleFactor
+          );
 
           renderedHeight += canvasPage.height;
         }
@@ -420,7 +543,14 @@ export default function ReportView() {
       if (backExists) {
         pdf.addPage();
         const backCanvas = await captureElement(backImageRef.current);
-        pdf.addImage(backCanvas.toDataURL("image/png"), "PNG", margin, margin, contentWidth, contentHeight);
+        pdf.addImage(
+          backCanvas.toDataURL("image/png"),
+          "PNG",
+          margin,
+          margin,
+          contentWidth,
+          contentHeight
+        );
       }
 
       pdf.save(`report_${report.id}.pdf`);
@@ -432,6 +562,9 @@ export default function ReportView() {
 
   const submittedDate = report.submitted || "N/A";
   const contactInfo = report.contact || "N/A";
+
+  const frontCoverPresent = !!details.frontPageImage;
+  const backCoverPresent = !!details.backPageImage;
 
   return (
     <Box sx={{ p: { xs: 2, sm: 4 }, maxWidth: 1200, mx: "auto", width: "100%" }}>
@@ -490,16 +623,67 @@ export default function ReportView() {
         </FormControl>
       </Box>
 
-      {/* Front Cover Image */}
-      <Box ref={frontImageRef} sx={{ mb: 2, width: "100%", textAlign: "center" }}>
-        {report.frontPageImage && (
+      {/* --- COVER PAGE STATUS NOTIFICATION --- */}
+      <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 3 }}>
+        {frontCoverPresent && (
+          <Chip
+            label="Front Cover Added"
+            color="success"
+            variant="outlined"
+            size="small"
+            icon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
+          />
+        )}
+        {backCoverPresent && (
+          <Chip
+            label="Back Cover Added"
+            color="success"
+            variant="outlined"
+            size="small"
+            icon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
+          />
+        )}
+        {!frontCoverPresent && !backCoverPresent && (
+          <Chip
+            label="No Cover Pages Added"
+            color="warning"
+            variant="outlined"
+            size="small"
+          />
+        )}
+      </Stack>
+      {/* --- END COVER PAGE STATUS NOTIFICATION --- */}
+
+
+      {/* --- HIDDEN FULL-SIZE ELEMENT FOR PDF CAPTURE (Front Cover) --- */}
+      {/* This element remains hidden and is captured by html2canvas for high-res PDF. */}
+      <Box 
+        ref={frontImageRef} 
+        sx={{
+          position: 'fixed',
+          top: -9999,      // Hide off-screen
+          left: -9999,
+          width: '794px',   // A4 width approximation (96 DPI)
+          height: '1123px', // A4 height approximation (96 DPI)
+          overflow: 'hidden',
+          zIndex: -1, // Ensure it doesn't interfere with interaction
+        }}
+      >
+        {details.frontPageImage && (
           <img
-            src={report.frontPageImage}
-            alt="Front Cover"
-            style={{ maxWidth: "100%", maxHeight: 1122, objectFit: "contain" }}
+            src={getImageUrl(details.frontPageImage)}
+            alt="Front Cover Full Resolution"
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'contain'
+            }}
+            crossOrigin="anonymous" 
           />
         )}
       </Box>
+      {/* --- END HIDDEN FRONT COVER --- */}
+
 
       {/* Main Report Content */}
       <Box ref={reportRef} sx={{ width: "100%" }}>
@@ -534,19 +718,37 @@ export default function ReportView() {
             </Typography>
           </CardContent>
         </Card>
-        <Summary_Repo data={report.details} showFull themeConfig={currentThemeConfig} />
+        <Summary_Repo data={details} showFull themeConfig={currentThemeConfig} />
       </Box>
 
-      {/* Back Cover Image */}
-      <Box ref={backImageRef} sx={{ mt: 2, width: "100%", textAlign: "center" }}>
-        {report.backPageImage && (
+      {/* --- HIDDEN FULL-SIZE ELEMENT FOR PDF CAPTURE (Back Cover) --- */}
+      {/* This element remains hidden and is captured by html2canvas for high-res PDF. */}
+      <Box 
+        ref={backImageRef} 
+        sx={{
+          position: 'fixed',
+          top: -9999,      // Hide off-screen
+          left: -9999,
+          width: '794px',   // A4 width approximation (96 DPI)
+          height: '1123px', // A4 height approximation (96 DPI)
+          overflow: 'hidden',
+          zIndex: -1, 
+        }}
+      >
+        {details.backPageImage && (
           <img
-            src={report.backPageImage}
-            alt="Back Cover"
-            style={{ maxWidth: "100%", maxHeight: 1122, objectFit: "contain" }}
+            src={getImageUrl(details.backPageImage)}
+            alt="Back Cover Full Resolution"
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'contain'
+            }}
+            crossOrigin="anonymous"
           />
         )}
       </Box>
+      {/* --- END HIDDEN BACK COVER --- */}
     </Box>
   );
 }

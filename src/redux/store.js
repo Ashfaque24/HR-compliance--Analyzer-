@@ -1,4 +1,3 @@
-
 // import { configureStore } from "@reduxjs/toolkit";
 // import authReducer from "./features/authSlice";
 // import sectionsReducer from "./features/sectionsSlice";
@@ -6,8 +5,9 @@
 // import answersReducer from "./features/answersSlice";
 // import assessmentQuestionsReducer from "./features/assessmentSlice";
 // import adminReportReducer from "./features/adminReportSlice";
-// import reportInfoReducer from "./features/reportInfoSlice"; 
-// import editReportReducer from "./features/editReportSlice";  // Import edit report slice
+// import reportInfoReducer from "./features/reportInfoSlice";
+// import editReportReducer from "./features/editReportSlice";
+// import bulkUploadReducer from "./features/bulkUploadSlice"; // ✅ import added
 
 // const store = configureStore({
 //   reducer: {
@@ -18,7 +18,8 @@
 //     assessment: assessmentQuestionsReducer,
 //     adminReport: adminReportReducer,
 //     reportInfo: reportInfoReducer,
-//     editReport: editReportReducer,  // Add edit report slice here
+//     editReport: editReportReducer,
+//     bulkUpload: bulkUploadReducer, // ✅ registered here
 //   },
 // });
 
@@ -36,7 +37,8 @@ import assessmentQuestionsReducer from "./features/assessmentSlice";
 import adminReportReducer from "./features/adminReportSlice";
 import reportInfoReducer from "./features/reportInfoSlice";
 import editReportReducer from "./features/editReportSlice";
-import bulkUploadReducer from "./features/bulkUploadSlice"; // ✅ import added
+import bulkUploadReducer from "./features/bulkUploadSlice";
+import coverPageReducer from "./features/coverPageSlice";  // ✅ Import coverPageSlice reducer here
 
 const store = configureStore({
   reducer: {
@@ -48,7 +50,8 @@ const store = configureStore({
     adminReport: adminReportReducer,
     reportInfo: reportInfoReducer,
     editReport: editReportReducer,
-    bulkUpload: bulkUploadReducer, // ✅ registered here
+    bulkUpload: bulkUploadReducer,
+    coverPage: coverPageReducer,  // ✅ Register slice here
   },
 });
 
