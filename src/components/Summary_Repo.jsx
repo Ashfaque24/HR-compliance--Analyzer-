@@ -1,6 +1,4 @@
-// code after theame based color 
-
-
+// code after theame based color
 import React from "react";
 import {
   Box,
@@ -11,7 +9,7 @@ import {
   ListItem,
   ListItemText,
   Button,
-  Paper
+  Paper,
 } from "@mui/material";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
 import InfoIcon from "@mui/icons-material/Info";
@@ -202,6 +200,7 @@ function RecommendedNextStepsBox({ data }) {
                   "& .MuiListItem-root": {
                     alignItems: "flex-start",
                     pl: 0,
+                    listStyleType: "none",
                   },
                 }}
               >
@@ -347,19 +346,13 @@ function SectionCard({ section, idx, sectionsCount, themeConfig }) {
               <Grid
                 key={index}
                 item
-                xs={12}
-                md={4}
+                
+                size={{xs:12,sm:4}}
                 sx={{
                   display: "flex",
                   flexDirection: "column",
-                  alignItems:
-                    index === 0
-                      ? "flex-start"
-                      : index === 1
-                        ? "center"
-                        : "flex-end",
-                  textAlign:
-                    index === 0 ? "left" : index === 1 ? "center" : "right",
+                  alignItems: "flex-start",
+                  textAlign: "left",
                 }}
               >
                 <Typography
@@ -380,6 +373,7 @@ function SectionCard({ section, idx, sectionsCount, themeConfig }) {
                       ? "Gaps"
                       : "Action Recommendations"}
                 </Typography>
+
                 {section[key].length === 0 ? (
                   <Typography
                     variant="body2"

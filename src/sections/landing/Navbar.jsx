@@ -422,9 +422,6 @@ const Navbar = ({ hideMenu = false }) => {
                   Admin
                 </MenuItem>
               )}
-              {onSummary && (
-                <MenuItem onClick={handleMenuClose}>Instant Report 📄</MenuItem>
-              )}
 
               {isAdminPage && (
                 <MenuItem

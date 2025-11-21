@@ -380,12 +380,22 @@
 
 
 
+
+
+
+
+
+
+
+
+
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAdminReport, clearReport } from "../redux/features/adminReportSlice";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import Summary_Repo from "../components/Summary_Repo";
+import ReportPdfGenerator from "../components/common/ReportPdfGenerator";
 import {
   Box,
   Button,
@@ -398,30 +408,26 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Chip, // Added Chip for a nice indicator
+  Chip,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // Icon for success
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import themeConfig from "../components/themeConfig.json";
-
-import { getImageUrl } from "../utils/imageHelper";
 
 export default function ReportView() {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const reportRef = useRef();
-  // These refs point to the HIDDEN, full-size elements for PDF generation.
-  const frontImageRef = useRef();
-  const backImageRef = useRef();
+  const contentRef = useRef();
 
   const dropdownOptions = Object.keys(themeConfig);
   const [selectedDomain, setSelectedDomain] = useState("Default");
 
   const { report, loading, error } = useSelector((state) => state.adminReport);
+
+  // Store the PDF generate function received from child
+  const [generatePdfFunc, setGeneratePdfFunc] = useState(null);
 
   useEffect(() => {
     if (id) dispatch(fetchAdminReport(id));
@@ -444,131 +450,21 @@ export default function ReportView() {
     );
 
   const details = report.details || {};
-
   const currentThemeConfig = themeConfig[selectedDomain] || themeConfig["Default"];
-
-  const handleDownloadPdf = async () => {
-    // Use presence of relative URLs for existence checks
-    const frontExists = !!details.frontPageImage && !!frontImageRef.current;
-    const backExists = !!details.backPageImage && !!backImageRef.current;
-
-    if (!frontExists && !backExists) {
-      const proceed = window.confirm(
-        "No cover pages found. Do you want to download the report without cover pages?"
-      );
-      if (!proceed) return;
-    }
-
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "pt",
-      format: "a4",
-    });
-
-    const margin = 56; // 20mm margin (approx)
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const contentWidth = pdfWidth - margin * 2;
-    const contentHeight = pdfHeight - margin * 2;
-
-    const captureElement = async (element) => {
-      if (!element) return null;
-      // Scale is set high (3) for better resolution capture
-      return await html2canvas(element, {
-        scale: 3, 
-        useCORS: true,
-        scrollX: 0,
-        scrollY: -window.scrollY,
-        backgroundColor: "#ffffff",
-      });
-    };
-
-    try {
-      // Front cover
-      if (frontExists) {
-        const frontCanvas = await captureElement(frontImageRef.current);
-        pdf.addImage(
-          frontCanvas.toDataURL("image/png"),
-          "PNG",
-          margin,
-          margin,
-          contentWidth,
-          contentHeight
-        );
-      }
-
-      // Report content
-      if (reportRef.current) {
-        if (frontExists) pdf.addPage();
-
-        const reportCanvas = await captureElement(reportRef.current);
-        let totalHeight = reportCanvas.height;
-        const pageHeightPx = (contentHeight * reportCanvas.width) / contentWidth;
-        let renderedHeight = 0;
-
-        while (renderedHeight < totalHeight) {
-          const canvasPage = document.createElement("canvas");
-          canvasPage.width = reportCanvas.width;
-          canvasPage.height = Math.min(pageHeightPx, totalHeight - renderedHeight);
-          const ctx = canvasPage.getContext("2d");
-          ctx.drawImage(
-            reportCanvas,
-            0,
-            renderedHeight,
-            reportCanvas.width,
-            canvasPage.height,
-            0,
-            0,
-            reportCanvas.width,
-            canvasPage.height
-          );
-
-          const imgData = canvasPage.toDataURL("image/png");
-          if (renderedHeight > 0) pdf.addPage();
-          const scaleFactor = contentWidth / canvasPage.width;
-          pdf.addImage(
-            imgData,
-            "PNG",
-            margin,
-            margin,
-            contentWidth,
-            canvasPage.height * scaleFactor
-          );
-
-          renderedHeight += canvasPage.height;
-        }
-      }
-
-      // Back cover
-      if (backExists) {
-        pdf.addPage();
-        const backCanvas = await captureElement(backImageRef.current);
-        pdf.addImage(
-          backCanvas.toDataURL("image/png"),
-          "PNG",
-          margin,
-          margin,
-          contentWidth,
-          contentHeight
-        );
-      }
-
-      pdf.save(`report_${report.id}.pdf`);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert("Failed to generate PDF");
-    }
-  };
-
   const submittedDate = report.submitted || "N/A";
   const contactInfo = report.contact || "N/A";
 
   const frontCoverPresent = !!details.frontPageImage;
   const backCoverPresent = !!details.backPageImage;
 
+  // When download button clicked, trigger the generatePdfFunc if available
+  const onDownloadClick = () => {
+    if (generatePdfFunc) generatePdfFunc();
+  };
+
   return (
     <Box sx={{ p: { xs: 2, sm: 4 }, maxWidth: 1200, mx: "auto", width: "100%" }}>
-      {/* Top Buttons and Dropdown */}
+      {/* Toolbar */}
       <Box
         sx={{
           mb: 3,
@@ -596,15 +492,17 @@ export default function ReportView() {
           >
             Back to Reports
           </Button>
+
           <Button
             variant="contained"
             color="primary"
-            onClick={handleDownloadPdf}
+            onClick={onDownloadClick}
             sx={{ width: { xs: "100%", sm: "auto" }, background: "#18a16e" }}
           >
             Download PDF
           </Button>
         </Box>
+
         <FormControl sx={{ minWidth: { xs: "100%", sm: 200 }, width: { xs: "100%", sm: 200 } }}>
           <InputLabel id="domain-select-label">Themes</InputLabel>
           <Select
@@ -623,70 +521,21 @@ export default function ReportView() {
         </FormControl>
       </Box>
 
-      {/* --- COVER PAGE STATUS NOTIFICATION --- */}
+      {/* Cover Status Chips */}
       <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 3 }}>
         {frontCoverPresent && (
-          <Chip
-            label="Front Cover Added"
-            color="success"
-            variant="outlined"
-            size="small"
-            icon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
-          />
+          <Chip label="Front Cover Added" color="success" variant="outlined" size="small" icon={<CheckCircleIcon sx={{ fontSize: 16 }} />} />
         )}
         {backCoverPresent && (
-          <Chip
-            label="Back Cover Added"
-            color="success"
-            variant="outlined"
-            size="small"
-            icon={<CheckCircleIcon sx={{ fontSize: 16 }} />}
-          />
+          <Chip label="Back Cover Added" color="success" variant="outlined" size="small" icon={<CheckCircleIcon sx={{ fontSize: 16 }} />} />
         )}
         {!frontCoverPresent && !backCoverPresent && (
-          <Chip
-            label="No Cover Pages Added"
-            color="warning"
-            variant="outlined"
-            size="small"
-          />
+          <Chip label="No Cover Pages Added" color="warning" variant="outlined" size="small" />
         )}
       </Stack>
-      {/* --- END COVER PAGE STATUS NOTIFICATION --- */}
-
-
-      {/* --- HIDDEN FULL-SIZE ELEMENT FOR PDF CAPTURE (Front Cover) --- */}
-      {/* This element remains hidden and is captured by html2canvas for high-res PDF. */}
-      <Box 
-        ref={frontImageRef} 
-        sx={{
-          position: 'fixed',
-          top: -9999,      // Hide off-screen
-          left: -9999,
-          width: '794px',   // A4 width approximation (96 DPI)
-          height: '1123px', // A4 height approximation (96 DPI)
-          overflow: 'hidden',
-          zIndex: -1, // Ensure it doesn't interfere with interaction
-        }}
-      >
-        {details.frontPageImage && (
-          <img
-            src={getImageUrl(details.frontPageImage)}
-            alt="Front Cover Full Resolution"
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'contain'
-            }}
-            crossOrigin="anonymous" 
-          />
-        )}
-      </Box>
-      {/* --- END HIDDEN FRONT COVER --- */}
-
 
       {/* Main Report Content */}
-      <Box ref={reportRef} sx={{ width: "100%" }}>
+      <Box ref={contentRef} sx={{ width: "100%" }}>
         <Card
           elevation={4}
           sx={{
@@ -718,37 +567,17 @@ export default function ReportView() {
             </Typography>
           </CardContent>
         </Card>
+
         <Summary_Repo data={details} showFull themeConfig={currentThemeConfig} />
       </Box>
 
-      {/* --- HIDDEN FULL-SIZE ELEMENT FOR PDF CAPTURE (Back Cover) --- */}
-      {/* This element remains hidden and is captured by html2canvas for high-res PDF. */}
-      <Box 
-        ref={backImageRef} 
-        sx={{
-          position: 'fixed',
-          top: -9999,      // Hide off-screen
-          left: -9999,
-          width: '794px',   // A4 width approximation (96 DPI)
-          height: '1123px', // A4 height approximation (96 DPI)
-          overflow: 'hidden',
-          zIndex: -1, 
-        }}
-      >
-        {details.backPageImage && (
-          <img
-            src={getImageUrl(details.backPageImage)}
-            alt="Back Cover Full Resolution"
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'contain'
-            }}
-            crossOrigin="anonymous"
-          />
-        )}
-      </Box>
-      {/* --- END HIDDEN BACK COVER --- */}
+      {/* PDF Generator Section */}
+      <ReportPdfGenerator
+        report={report}
+        details={details}
+        contentRef={contentRef}
+        onGeneratePdf={(handler) => setGeneratePdfFunc(() => handler)}
+      />
     </Box>
   );
 }

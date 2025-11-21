@@ -180,6 +180,7 @@ export default function ReportPage() {
                 "Status",
                 "Date Submitted",
                 "Date Started",
+                "Requested",
                 "Actions",
               ].map((head) => (
                 <TableCell key={head} sx={{ fontWeight: "bold" }}>
@@ -201,6 +202,11 @@ export default function ReportPage() {
                   <TableCell>{row.status}</TableCell>
                   <TableCell>{formatDate(row.submitted_at)}</TableCell>
                   <TableCell>{formatDate(row.started_at)}</TableCell>
+                  <TableCell>
+                    {row.requested === true || row.requested === "Yes"
+                      ? "Yes"
+                      : "No"}
+                  </TableCell>
 
                   {/* ======= ACTION BUTTONS ======= */}
                   <TableCell>
