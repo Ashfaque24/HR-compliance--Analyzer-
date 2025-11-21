@@ -52,10 +52,7 @@ export default function ReportPage() {
     const emailMatch = (r.email || "").toLowerCase().includes(query);
 
     const matchesSearch = companyMatch || nameMatch || emailMatch;
-    const matchesStatus =
-      statusFilter === "All Status" || r.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   if (loading) return <LoadingSpinner message="Loading reports..." />;
@@ -136,22 +133,6 @@ export default function ReportPage() {
             ),
           }}
         />
-
-        {/* Status Filter */}
-        <Select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          size="small"
-          fullWidth={isSmDown}
-          sx={{ width: isSmDown ? "100%" : 200 }}
-        >
-          <MenuItem value="All Status">All Status</MenuItem>
-          <MenuItem value="Completed">Completed</MenuItem>
-          <MenuItem value="Enhanced">Enhanced</MenuItem>
-          <MenuItem value="In Review">In Review</MenuItem>
-          <MenuItem value="Pending">Pending</MenuItem>
-          <MenuItem value="In Progress">In Progress</MenuItem>
-        </Select>
       </Stack>
 
       {/* ======= TABLE ======= */}
@@ -177,7 +158,6 @@ export default function ReportPage() {
                 "Email",
                 "Contact",
                 "Score",
-                "Status",
                 "Date Submitted",
                 "Date Started",
                 "Requested",
@@ -199,14 +179,9 @@ export default function ReportPage() {
                   <TableCell>{row.email || "-"}</TableCell>
                   <TableCell>{row.contact || "-"}</TableCell>
                   <TableCell>{row.score}</TableCell>
-                  <TableCell>{row.status}</TableCell>
                   <TableCell>{formatDate(row.submitted_at)}</TableCell>
                   <TableCell>{formatDate(row.started_at)}</TableCell>
-                  <TableCell>
-                    {row.requested === true || row.requested === "Yes"
-                      ? "Yes"
-                      : "No"}
-                  </TableCell>
+                  <TableCell>{row.isEnquired ? "Yes" : "No"}</TableCell>
 
                   {/* ======= ACTION BUTTONS ======= */}
                   <TableCell>

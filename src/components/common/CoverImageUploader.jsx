@@ -1,10 +1,9 @@
+// src/components/common/CoverImageUploader.js (Corrected)
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchExistingCoverImages,
   saveCoverImages,
-  setFrontImage,
-  setBackImage,
   resetSaveStatus,
 } from "../../redux/features/coverPageSlice";
 import {
@@ -27,12 +26,16 @@ import {
 import { CloudUpload, Close, CheckCircle } from "@mui/icons-material";
 import { getImageUrl } from "../../utils/imageHelper";
 
-export default function CoverImageUploader({ session_uuid }) {
+export default function CoverImageUploader({
+  session_uuid,
+  frontImage,
+  backImage,
+  setFrontImage,
+  setBackImage,
+}) {
   const dispatch = useDispatch();
 
   const {
-    frontImage,
-    backImage,
     existingFrontImages,
     existingBackImages,
     loading,
@@ -40,6 +43,9 @@ export default function CoverImageUploader({ session_uuid }) {
     saveLoading,
     saveError,
     saveSuccess,
+  
+    newFrontFilename, 
+    newBackFilename,  
   } = useSelector((state) => state.coverPage);
 
   const [frontFile, setFrontFile] = useState(null);
@@ -47,18 +53,87 @@ export default function CoverImageUploader({ session_uuid }) {
   const [openFrontDialog, setOpenFrontDialog] = useState(false);
   const [openBackDialog, setOpenBackDialog] = useState(false);
 
+  // States to hold preview URLs for front/back images
+  const [frontImageUrl, setFrontImageUrl] = useState("");
+  const [backImageUrl, setBackImageUrl] = useState("");
+
   useEffect(() => {
     if (session_uuid) {
       dispatch(fetchExistingCoverImages(session_uuid));
-      dispatch(resetSaveStatus());
+      // Reset save status on mount to prevent stale success message
+      dispatch(resetSaveStatus()); 
     }
   }, [dispatch, session_uuid]);
 
-  const handleFileChange = (setter, resetFile) => (e) => {
+  // 🔥 FIX 1: Update Parent State and Reset Local File State upon successful upload
+  useEffect(() => {
+    if (saveSuccess) {
+      // 1. Reset local file objects
+      setFrontFile(null);
+      setBackFile(null);
+      
+    
+      if (newFrontFilename) {
+        setFrontImage(newFrontFilename);
+      }
+      if (newBackFilename) {
+        setBackImage(newBackFilename);
+      }
+      
+     
+      dispatch(fetchExistingCoverImages(session_uuid));
+      
+      
+    }
+    
+    // Cleanup save status after success or error
+    if (saveSuccess || saveError) {
+        const timer = setTimeout(() => {
+            dispatch(resetSaveStatus());
+        }, 3000); // Clear status messages after 3 seconds
+        return () => clearTimeout(timer);
+    }
+  }, [saveSuccess, saveError, newFrontFilename, newBackFilename, dispatch, session_uuid, setFrontImage, setBackImage]);
+  // Note: frontImage and backImage are NOT dependencies here, as we are setting them.
+
+
+  // Update front image URL preview whenever related dependencies change
+  useEffect(() => {
+    if (frontFile) {
+      // Priority 1: Newly selected file from local computer
+      const url = URL.createObjectURL(frontFile);
+      setFrontImageUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else if (frontImage) { // Priority 2: Filename exists (from parent prop)
+      const selected = existingFrontImages.find((img) => img.filename === frontImage);
+      // 🔥 FIX 2: Ensure existingFrontImages is checked for the image URL
+      setFrontImageUrl(selected ? getImageUrl(selected.url) : "");
+    } else {
+      setFrontImageUrl("");
+    }
+  }, [frontFile, frontImage, existingFrontImages]);
+
+  // Update back image URL preview similarly
+  useEffect(() => {
+    if (backFile) {
+      // Priority 1: Newly selected file from local computer
+      const url = URL.createObjectURL(backFile);
+      setBackImageUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else if (backImage) { // Priority 2: Filename exists (from parent prop)
+      const selected = existingBackImages.find((img) => img.filename === backImage);
+      // 🔥 FIX 2: Ensure existingBackImages is checked for the image URL
+      setBackImageUrl(selected ? getImageUrl(selected.url) : "");
+    } else {
+      setBackImageUrl("");
+    }
+  }, [backFile, backImage, existingBackImages]);
+
+  const handleFileChange = (setter, resetSelector) => (e) => {
     const file = e.target.files[0];
     if (file) {
-      setter(file);
-      resetFile(null);
+      setter(file); // setFrontFile(file)
+      resetSelector(""); // setFrontImage("") - clear selected existing image
     }
   };
 
@@ -73,30 +148,17 @@ export default function CoverImageUploader({ session_uuid }) {
     if (backFile) formData.append("backImage", backFile);
 
     dispatch(saveCoverImages({ session_uuid, formData }));
-  };
-
-  const getFrontImageUrl = () => {
-    if (frontFile) return URL.createObjectURL(frontFile);
-    if (!frontImage) return "";
-    const selected = existingFrontImages.find((img) => img.filename === frontImage);
-    return selected ? getImageUrl(selected.url) : "";
-  };
-
-  const getBackImageUrl = () => {
-    if (backFile) return URL.createObjectURL(backFile);
-    if (!backImage) return "";
-    const selected = existingBackImages.find((img) => img.filename === backImage);
-    return selected ? getImageUrl(selected.url) : "";
+    // No need to manually update state here, as it's done in the saveSuccess useEffect
   };
 
   const handleSelectExisting = (filename, type) => {
     if (type === "front") {
-      dispatch(setFrontImage(filename));
-      setFrontFile(null);
+      setFrontImage(filename); // Update parent state with selected filename
+      setFrontFile(null); // Clear local file (upload) state
       setOpenFrontDialog(false);
     } else {
-      dispatch(setBackImage(filename));
-      setBackFile(null);
+      setBackImage(filename); // Update parent state with selected filename
+      setBackFile(null); // Clear local file (upload) state
       setOpenBackDialog(false);
     }
   };
@@ -113,7 +175,9 @@ export default function CoverImageUploader({ session_uuid }) {
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        {images.length === 0 ? (
+        {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress /></Box>
+        ) : images.length === 0 ? (
           <Typography color="text.secondary" textAlign="center" py={4}>
             No existing images found. Upload a new image.
           </Typography>
@@ -213,11 +277,11 @@ export default function CoverImageUploader({ session_uuid }) {
             </Typography>
 
             {/* Selected/Preview Image */}
-            {(frontFile || frontImage) && (
+            {(frontFile || frontImageUrl) && (
               <Paper elevation={3} sx={{ p: 2, mb: 2, position: "relative" }}>
                 <Box
                   component="img"
-                  src={getFrontImageUrl()}
+                  src={frontImageUrl}
                   alt="Front Page Preview"
                   sx={{
                     width: "100%",
@@ -236,8 +300,8 @@ export default function CoverImageUploader({ session_uuid }) {
                     "&:hover": { backgroundColor: "rgba(255,255,255,1)" },
                   }}
                   onClick={() => {
-                    setFrontFile(null);
-                    dispatch(setFrontImage(""));
+                    setFrontFile(null); // Clear local file state
+                    setFrontImage(""); // Clear parent's selected filename state
                   }}
                 >
                   <Close />
@@ -269,7 +333,7 @@ export default function CoverImageUploader({ session_uuid }) {
                   type="file"
                   accept="image/*"
                   hidden
-                  onChange={handleFileChange(setFrontFile, () => dispatch(setFrontImage("")))}
+                  onChange={handleFileChange(setFrontFile, setFrontImage)}
                 />
               </Button>
             </Stack>
@@ -282,11 +346,11 @@ export default function CoverImageUploader({ session_uuid }) {
             </Typography>
 
             {/* Selected/Preview Image */}
-            {(backFile || backImage) && (
+            {(backFile || backImageUrl) && (
               <Paper elevation={3} sx={{ p: 2, mb: 2, position: "relative" }}>
                 <Box
                   component="img"
-                  src={getBackImageUrl()}
+                  src={backImageUrl}
                   alt="Back Page Preview"
                   sx={{
                     width: "100%",
@@ -306,7 +370,7 @@ export default function CoverImageUploader({ session_uuid }) {
                   }}
                   onClick={() => {
                     setBackFile(null);
-                    dispatch(setBackImage(""));
+                    setBackImage("");
                   }}
                 >
                   <Close />
@@ -338,7 +402,7 @@ export default function CoverImageUploader({ session_uuid }) {
                   type="file"
                   accept="image/*"
                   hidden
-                  onChange={handleFileChange(setBackFile, () => dispatch(setBackImage("")))}
+                  onChange={handleFileChange(setBackFile, setBackImage)}
                 />
               </Button>
             </Stack>
@@ -363,7 +427,7 @@ export default function CoverImageUploader({ session_uuid }) {
 
         {saveSuccess && (
           <Alert severity="success" sx={{ mt: 3 }}>
-            Cover images uploaded successfully!
+            Cover images uploaded and selected successfully!
           </Alert>
         )}
 
@@ -401,7 +465,4 @@ export default function CoverImageUploader({ session_uuid }) {
     </Card>
   );
 }
-
-
-
 

@@ -34,6 +34,7 @@ import CoverImageUploader from "../components/common/CoverImageUploader";
 
 const graphTypes = ["None", "Gauge Chart", "Star Chart", "Circular Chart"];
 const chipStyles = { fontWeight: 600, fontSize: 13, px: 1.2 };
+
 // blankNextSteps is no longer strictly necessary but kept for context if needed elsewhere
 const blankNextSteps = {
   immediate: [],
@@ -46,15 +47,19 @@ export default function EditReportPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { frontImage, backImage } = useSelector((state) => state.coverPage);
+  const { frontImage: reduxFrontImage, backImage: reduxBackImage } = useSelector(
+    (state) => state.coverPage
+  );
   const { report, loading, error, saving, saveError } = useSelector(
     (state) => state.editReport
   );
 
   const [form, setForm] = useState(null);
-  // const [test, setTest] = useState('') // <-- REMOVED UNNECESSARY STATE
-  
   const [coverModalOpen, setCoverModalOpen] = useState(false);
+
+  // Local states for images - lifted state
+  const [frontImage, setFrontImage] = useState("");
+  const [backImage, setBackImage] = useState("");
 
   useEffect(() => {
     if (session_uuid) {
@@ -69,12 +74,11 @@ export default function EditReportPage() {
     if (report) {
       let updatedReport = JSON.parse(JSON.stringify(report));
 
-      // Normalize recommendedNextSteps keys with fallback for different key casing
-      const backendSteps = updatedReport.details?.recommendedNextSteps || updatedReport.recommendedNextSteps || {}; // Use updatedReport.details? if relevant
+      const backendSteps =
+        updatedReport.details?.recommendedNextSteps ||
+        updatedReport.recommendedNextSteps ||
+        {};
 
-      // setTest(backendSteps.immediate) // <-- REMOVED UNNECESSARY CALL
-
-      // Ensure all next step types are initialized as arrays, handling potential naming variations
       updatedReport.recommendedNextSteps = {
         immediate: backendSteps.immediate || [],
         shortTerm: backendSteps.shortTerm || backendSteps.short_term || [],
@@ -101,6 +105,10 @@ export default function EditReportPage() {
       updatedReport.backPageImage = updatedReport.backPageImage || "";
 
       setForm(updatedReport);
+
+      // Initialize lifted local image state from report images
+      setFrontImage(updatedReport.frontPageImage);
+      setBackImage(updatedReport.backPageImage);
     }
   }, [report]);
 
@@ -172,7 +180,7 @@ export default function EditReportPage() {
     navigate("/admin/report");
   };
 
-  const coverPagesUploaded = Boolean(form.frontPageImage && form.backPageImage);
+  const coverPagesUploaded = Boolean(frontImage && backImage);
 
   return (
     <Box
@@ -226,7 +234,6 @@ export default function EditReportPage() {
         </Grid>
       </Paper>
 
-
       <Box sx={{ mb: 3, display: "flex", justifyContent: "center" }}>
         <Button variant="outlined" color="primary" onClick={() => setCoverModalOpen(true)} sx={{ fontWeight: 700 }}>
           Edit Cover Page Images
@@ -241,7 +248,13 @@ export default function EditReportPage() {
           </IconButton>
         </DialogTitle>
         <DialogContent dividers>
-          <CoverImageUploader session_uuid={session_uuid} />
+          <CoverImageUploader
+            session_uuid={session_uuid}
+            frontImage={frontImage}
+            backImage={backImage}
+            setFrontImage={setFrontImage}
+            setBackImage={setBackImage}
+          />
         </DialogContent>
       </Dialog>
 
@@ -328,9 +341,7 @@ export default function EditReportPage() {
                 minRows={4}
                 fullWidth
                 placeholder="List immediate actions, one per line"
-                // CORRECTED: Use the form state and join the array into a string
                 value={form.recommendedNextSteps?.immediate?.join("\n") || ""}
-                // value={test} // <-- REMOVED INCORRECT BINDING
                 onChange={handleNextStepChange("immediate")}
               />
             </Box>
@@ -393,6 +404,7 @@ export default function EditReportPage() {
     </Box>
   );
 }
+
 
 
 

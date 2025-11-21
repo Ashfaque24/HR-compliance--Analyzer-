@@ -1,57 +1,60 @@
-// import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-// import requestWrapper from "../../api/axiosInstance";
+// userReportSlice.js
 
-// // Async thunk to fetch user report by session_uuid
-// export const fetchUserReport = createAsyncThunk(
-//   "userReport/fetchUserReport",
-//   async (session_uuid, { rejectWithValue }) => {
-//     try {
-//       const response = await requestWrapper({
-//         method: "GET",
-//         url: `user/response/${session_uuid}/summary`, // same backend endpoint
-//       });
-//       return response;
-//     } catch (error) {
-//       return rejectWithValue(error.data || error.message || "Network error");
-//     }
-//   }
-// );
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import requestWrapper from "../../api/axiosInstance";
 
-// const userReportSlice = createSlice({
-//   name: "userReport",
-//   initialState: {
-//     report: null,
-//     loading: false,
-//     error: null,
-//   },
-//   reducers: {
-//     clearReport: (state) => {
-//       state.report = null;
-//       state.loading = false;
-//       state.error = null;
-//     },
-//   },
-//   extraReducers: builder => {
-//     builder
-//       .addCase(fetchUserReport.pending, (state) => {
-//         state.loading = true;
-//         state.error = null;
-//       })
-//       .addCase(fetchUserReport.fulfilled, (state, action) => {
-//         state.loading = false;
-//         state.report = action.payload;
-//       })
-//       .addCase(fetchUserReport.rejected, (state, action) => {
-//         state.loading = false;
-//         state.error = action.payload;
-//       });
-//   }
-// });
+// Thunk for requesting full report
+export const requestFullReport = createAsyncThunk(
+  "userReport/requestFullReport",
+  async (session_uuid, { rejectWithValue }) => {
+    try {
+      const response = await requestWrapper({
+        method: "POST",
+        url: `admin/enquire/${session_uuid}`,
+        // If backend expects some extra data, pass in 'data:' property here
+      });
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.data || error.message || "Network error");
+    }
+  }
+);
 
-// export const { clearReport } = userReportSlice.actions;
-// export default userReportSlice.reducer;
+const userReportSlice = createSlice({
+  name: "userReport",
+  initialState: {
+    loading: false,
+    error: null,
+    success: false,
+    reportData: null, // In case backend responds with report details
+  },
+  reducers: {
+    resetUserReportStatus(state) {
+      state.loading = false;
+      state.error = null;
+      state.success = false;
+      state.reportData = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(requestFullReport.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(requestFullReport.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.reportData = action.payload;
+      })
+      .addCase(requestFullReport.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      });
+  },
+});
 
-
-
-
-// // needed to deteate ----------------------------------------------------------------------------------
+export const { resetUserReportStatus } = userReportSlice.actions;
+export default userReportSlice.reducer;

@@ -38,7 +38,9 @@ import adminReportReducer from "./features/adminReportSlice";
 import reportInfoReducer from "./features/reportInfoSlice";
 import editReportReducer from "./features/editReportSlice";
 import bulkUploadReducer from "./features/bulkUploadSlice";
-import coverPageReducer from "./features/coverPageSlice";  // ✅ Import coverPageSlice reducer here
+import coverPageReducer from "./features/coverPageSlice";  
+import userReportReducer from "./features/userReportSlice";
+
 
 const store = configureStore({
   reducer: {
@@ -51,7 +53,8 @@ const store = configureStore({
     reportInfo: reportInfoReducer,
     editReport: editReportReducer,
     bulkUpload: bulkUploadReducer,
-    coverPage: coverPageReducer,  // ✅ Register slice here
+    coverPage: coverPageReducer,
+    userReport: userReportReducer,
   },
 });
 

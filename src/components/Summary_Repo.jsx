@@ -1,5 +1,4 @@
-// code after theame based color
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -10,6 +9,8 @@ import {
   ListItemText,
   Button,
   Paper,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
 import InfoIcon from "@mui/icons-material/Info";
@@ -18,6 +19,8 @@ import { ExecutiveSummary } from "./ExecutiveSummary";
 import { GaugeChart } from "./graph/GaugeChart";
 import { StarRating } from "./graph/StarRating";
 import { CircularProgressWithLabel } from "./graph/CircularProgressWithLabel";
+import { useDispatch, useSelector } from "react-redux";
+import { requestFullReport } from "../redux/features/userReportSlice";
 
 // Use global font for consistency
 const reportFont = "Helvetica, Arial, sans-serif";
@@ -86,7 +89,7 @@ const dummySummaryHalf = [
   },
 ];
 
-// Recommended next steps box (unchanged from your version)
+// Recommended next steps box (unchanged)
 function RecommendedNextStepsBox({ data }) {
   const fallback = {
     immediate: [],
@@ -166,7 +169,7 @@ function RecommendedNextStepsBox({ data }) {
               listColor: "#1e8b61",
               emptyColor: "#999",
             },
-          ].map((sec, index) => (
+          ].map((sec) => (
             <Box
               key={sec.key}
               sx={{
@@ -346,8 +349,7 @@ function SectionCard({ section, idx, sectionsCount, themeConfig }) {
               <Grid
                 key={index}
                 item
-                
-                size={{xs:12,sm:4}}
+                size={{ xs: 12, sm: 4 }}
                 sx={{
                   display: "flex",
                   flexDirection: "column",
@@ -361,8 +363,8 @@ function SectionCard({ section, idx, sectionsCount, themeConfig }) {
                     key === "strengths"
                       ? green[700]
                       : key === "gaps"
-                        ? red[700]
-                        : blue[700]
+                      ? red[700]
+                      : blue[700]
                   }
                   mb={2}
                   sx={{ fontSize: { xs: 16, sm: 18 } }}
@@ -370,8 +372,8 @@ function SectionCard({ section, idx, sectionsCount, themeConfig }) {
                   {key === "strengths"
                     ? "Strengths"
                     : key === "gaps"
-                      ? "Gaps"
-                      : "Action Recommendations"}
+                    ? "Gaps"
+                    : "Action Recommendations"}
                 </Typography>
 
                 {section[key].length === 0 ? (
@@ -407,8 +409,31 @@ function SectionCard({ section, idx, sectionsCount, themeConfig }) {
   );
 }
 
-// Main summary report component, passes themeConfig
 export default function Summary_Repo({ data, showFull, themeConfig }) {
+  const dispatch = useDispatch();
+  const { loading, error, success } = useSelector((state) => state.userReport);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [requestInitiated, setRequestInitiated] = useState(false);
+  const session_uuid = localStorage.getItem("session_uuid");
+
+  useEffect(() => {
+    if (success && requestInitiated) {
+      setSnackbarOpen(true);
+      setRequestInitiated(false);
+    }
+  }, [success, requestInitiated]);
+
+  const handleRequestFullReport = () => {
+    if (!session_uuid) return;
+    setRequestInitiated(true);
+    dispatch(requestFullReport(session_uuid));
+  };
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackbarOpen(false);
+  };
+
   if (!data) return <div>No data</div>;
   const isBlurred = !showFull;
 
@@ -436,7 +461,6 @@ export default function Summary_Repo({ data, showFull, themeConfig }) {
         position: "relative",
       }}
     >
-      {/* Pass themeConfig to ExecutiveSummary */}
       <ExecutiveSummary data={data} themeConfig={themeConfig} />
       <Box sx={{ position: "relative" }}>
         <Box sx={isBlurred ? { ...blurStyles } : {}}>
@@ -450,9 +474,7 @@ export default function Summary_Repo({ data, showFull, themeConfig }) {
             />
           ))}
         </Box>
-        {/* Only show next steps if report is NOT blurred */}
         {!isBlurred && <RecommendedNextStepsBox data={recommendedNextSteps} />}
-        {/* Overlay for blurred view */}
         {isBlurred && (
           <Box sx={catchyOverlayStyles}>
             <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
@@ -469,10 +491,16 @@ export default function Summary_Repo({ data, showFull, themeConfig }) {
                 py: 1,
                 fontWeight: 700,
               }}
-              onClick={() => alert("Request Full Report")}
+              onClick={handleRequestFullReport}
+              disabled={loading}
             >
-              Request Full Report
+              {loading ? "Requesting..." : "Request Full Report"}
             </Button>
+            {error && (
+              <Typography color="error" sx={{ mt: 1 }}>
+                {error}
+              </Typography>
+            )}
             <Typography variant="body2" sx={{ mt: 2 }}>
               <ContactMailIcon sx={{ verticalAlign: "middle" }} /> Email:
               <a
@@ -485,6 +513,20 @@ export default function Summary_Repo({ data, showFull, themeConfig }) {
           </Box>
         )}
       </Box>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          Request sent! Admin will contact you soon.
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
