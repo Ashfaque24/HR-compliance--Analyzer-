@@ -70,3 +70,8 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.avoid-break {
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}

@@ -120,7 +120,7 @@ export default function EditReportPage() {
       </Box>
     );
   if (!form && !loading && !error)
-    return <Box sx={{ p: 4 }}>Report not found.</Box>;
+    return <Box sx={{ p: 4 }}>Loading...</Box>;
 
   const handleChange = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -235,7 +235,7 @@ export default function EditReportPage() {
       </Paper>
 
       <Box sx={{ mb: 3, display: "flex", justifyContent: "center" }}>
-        <Button variant="outlined" color="primary" onClick={() => setCoverModalOpen(true)} sx={{ fontWeight: 700 }}>
+        <Button variant="contained" color="primary" onClick={() => setCoverModalOpen(true)} sx={{ fontWeight: 700, background: "#18a16e" }}>
           Edit Cover Page Images
         </Button>
       </Box>
@@ -382,7 +382,7 @@ export default function EditReportPage() {
             color="primary"
             onClick={handleSave}
             disabled={saving}
-            sx={{ px: 4, fontWeight: 700, width: { xs: "100%", sm: "auto" }, background: "#4385f5" }}
+            sx={{ px: 4, fontWeight: 700, width: { xs: "100%", sm: "auto" }, background: "#18a16e" }}
           >
             {saving ? "Saving..." : "Save Changes"}
           </Button>
@@ -390,7 +390,7 @@ export default function EditReportPage() {
             variant="contained"
             color="secondary"
             onClick={() => navigate(-1)}
-            sx={{ px: 4, width: { xs: "100%", sm: "auto" }, background: "#4385f5" }}
+            sx={{ px: 4, width: { xs: "100%", sm: "auto" }, background: "#18a16e" }}
           >
             Cancel
           </Button>
