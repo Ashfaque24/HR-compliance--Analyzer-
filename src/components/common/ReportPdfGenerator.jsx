@@ -1,131 +1,44 @@
-import React, { useRef, useEffect } from "react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+// ReportPdfGenerator.jsx
+import React, { useEffect, useRef } from "react";
 import { Box } from "@mui/material";
 import { getImageUrl } from "../../utils/imageHelper";
+import generatePDF from "react-to-pdf";
 
-export default function ReportPdfGenerator({ 
-  report, 
-  details, 
-  contentRef, 
+// A4 dimensions at 96 DPI
+const A4_WIDTH = "794px";
+const A4_HEIGHT = "1123px";
+
+const pageBreak = {
+  pageBreakAfter: "always",
+  breakAfter: "page",
+};
+
+export default function ReportPdfGenerator({
+  report,
+  details,
+  contentRef,
   onGeneratePdf,
-  onPdfDone // NEW: Callback to notify when PDF generation is complete
+  onPdfDone,
 }) {
-  const frontRef = useRef();
-  const backRef = useRef();
-
-  const A4_WIDTH_PX = 1123;
-  const A4_HEIGHT_PX = 1587;
-  const CANVAS_SCALE = 3;
+  const wrapperRef = useRef();
 
   const handleDownloadPdf = async () => {
     try {
-      const pdf = new jsPDF("p", "mm", "a4");
+      if (!wrapperRef.current) return;
 
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
+      const pdfOptions = {
+        filename: `report_${report.id}.pdf`,
+        page: { margin: 0 },
+        canvas: { scale: 2 },
+      };
 
-      const MARGIN_MM = 12;
-      const usableWidth = pageWidth - MARGIN_MM * 2;
-      const usableHeight = pageHeight - MARGIN_MM * 2;
+      await generatePDF(wrapperRef, pdfOptions);
 
-      // ---------- FRONT COVER ----------
-      if (details.frontPageImage && frontRef.current) {
-        const canvas = await html2canvas(frontRef.current, {
-          scale: CANVAS_SCALE,
-          useCORS: true,
-        });
-
-        pdf.addImage(
-          canvas.toDataURL("image/png"),
-          "PNG",
-          MARGIN_MM,
-          MARGIN_MM,
-          usableWidth,
-          usableHeight
-        );
-      }
-
-      // ---------- REPORT CONTENT ----------
-      if (contentRef.current) {
-        pdf.addPage();
-
-        // Force fixed A4 width
-        const originalWidth = contentRef.current.style.width;
-        contentRef.current.style.width = `${A4_WIDTH_PX}px`;
-
-        const canvas = await html2canvas(contentRef.current, {
-          scale: CANVAS_SCALE,
-          useCORS: true,
-          backgroundColor: "#ffffff",
-          width: A4_WIDTH_PX,
-          windowWidth: A4_WIDTH_PX,
-        });
-
-        contentRef.current.style.width = originalWidth;
-
-        const imgData = canvas.toDataURL("image/png");
-
-        const fullHeight = (canvas.height * usableWidth) / canvas.width;
-
-        // PAGE 1
-        pdf.addImage(
-          imgData,
-          "PNG",
-          MARGIN_MM,
-          MARGIN_MM,
-          usableWidth,
-          fullHeight
-        );
-
-        // PAGE 2 (Only if content height exceeds page)
-        if (fullHeight > usableHeight) {
-          pdf.addPage();
-          pdf.addImage(
-            imgData,
-            "PNG",
-            MARGIN_MM,
-            MARGIN_MM - usableHeight,
-            usableWidth,
-            fullHeight
-          );
-        }
-      }
-
-      // ---------- BACK COVER ----------
-      if (details.backPageImage && backRef.current) {
-        pdf.addPage();
-
-        const canvas = await html2canvas(backRef.current, {
-          scale: CANVAS_SCALE,
-          useCORS: true,
-        });
-
-        pdf.addImage(
-          canvas.toDataURL("image/png"),
-          "PNG",
-          MARGIN_MM,
-          MARGIN_MM,
-          usableWidth,
-          usableHeight
-        );
-      }
-
-      // SAVE
-      pdf.save(`report_${report.id}.pdf`);
-
-      // NEW: Call the completion callback
-      if (onPdfDone) {
-        onPdfDone();
-      }
+      if (onPdfDone) onPdfDone();
     } catch (err) {
-      console.error("PDF Error:", err);
-      alert("PDF generation failed. Try again.");
-      
-      // NEW: Still close loading spinner even if error occurs
-      if (onPdfDone) {
-        onPdfDone();
-      }
+      console.error("PDF generation error:", err);
+      alert("PDF generation failed.");
+      if (onPdfDone) onPdfDone();
     }
   };
 
@@ -135,47 +48,79 @@ export default function ReportPdfGenerator({
 
   return (
     <>
-      {/* Hidden Front Cover */}
+      {/* Hidden wrapper for PDF */}
       <Box
-        ref={frontRef}
+        ref={wrapperRef}
         sx={{
           position: "fixed",
-          top: -9999,
-          left: -9999,
-          width: `${A4_WIDTH_PX}px`,
-          height: `${A4_HEIGHT_PX}px`,
+          top: "-9999px",
+          left: "-9999px",
+          width: A4_WIDTH,
+          background: "#fff",
+          overflow: "visible", // IMPORTANT
         }}
       >
+        {/* ---------- FRONT COVER ---------- */}
         {details.frontPageImage && (
-          <img
-            src={getImageUrl(details.frontPageImage)}
-            alt="Front Cover"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            crossOrigin="anonymous"
-          />
+          <Box sx={{ width: A4_WIDTH, height: A4_HEIGHT, ...pageBreak }}>
+            <img
+              src={getImageUrl(details.frontPageImage)}
+              style={{
+                width: A4_WIDTH,
+                height: A4_HEIGHT,
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
+          </Box>
         )}
-      </Box>
 
-      {/* Hidden Back Cover */}
-      <Box
-        ref={backRef}
-        sx={{
-          position: "fixed",
-          top: -9999,
-          left: -9999,
-          width: `${A4_WIDTH_PX}px`,
-          height: `${A4_HEIGHT_PX}px`,
-        }}
-      >
+        {/* ---------- REPORT CONTENT ---------- */}
+        <Box
+          sx={{
+            width: A4_WIDTH,
+            padding: "20px",
+            boxSizing: "border-box",
+            overflow: "visible",
+            ...pageBreak,
+          }}
+        >
+          {contentRef.current && (
+            <div
+              dangerouslySetInnerHTML={{
+                __html: contentRef.current.innerHTML,
+              }}
+            />
+          )}
+        </Box>
+
+        {/* ---------- FORCE CLEAN NEW PAGE BEFORE BACK COVER ---------- */}
+        <div style={{ height: "0px", pageBreakBefore: "always" }} />
+
+        {/* ---------- BACK COVER (FULL SINGLE PAGE) ---------- */}
         {details.backPageImage && (
-          <img
-            src={getImageUrl(details.backPageImage)}
-            alt="Back Cover"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            crossOrigin="anonymous"
-          />
+          <Box
+            sx={{
+              width: A4_WIDTH,
+              height: A4_HEIGHT,
+              overflow: "hidden", // prevent internal slicing
+              position: "relative",
+            }}
+          >
+            <img
+              src={getImageUrl(details.backPageImage)}
+              style={{
+                width: A4_WIDTH,
+                height: A4_HEIGHT,
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
+          </Box>
         )}
       </Box>
     </>
   );
 }
+
+

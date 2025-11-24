@@ -31,6 +31,7 @@
     "react-dom": "^19.1.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.9.1",
+    "react-to-pdf": "^2.0.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

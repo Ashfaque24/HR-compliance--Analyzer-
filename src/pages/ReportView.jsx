@@ -225,12 +225,13 @@ export default function ReportView() {
 
       {/* PDF Generator */}
       <ReportPdfGenerator
-        report={report}
-        details={details}
-        contentRef={contentRef}
-        onGeneratePdf={(handler) => setGeneratePdfFunc(() => handler)}
-        onPdfDone={() => setPdfLoading(false)} // Stop button loader after PDF done
-      />
+  report={report}
+  details={details}
+  contentRef={contentRef}
+  onGeneratePdf={(h) => setGeneratePdfFunc(() => h)}
+  onPdfDone={() => setPdfLoading(false)}
+/>
+
     </Box>
   );
 }
