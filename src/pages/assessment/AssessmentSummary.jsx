@@ -1,14 +1,11 @@
-// AssessmentSummary.jsx
-
 import React, { useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom"; 
-import Summary_Repo from "../../components/Summary_Repo"; 
+import { useLocation } from "react-router-dom";
+import Summary_Repo from "../../components/Summary_Repo";
 import { Button, Box, Typography } from "@mui/material";
-import jsPDF from "jspdf";  
-import html2canvas from "html2canvas"; 
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
-import themeConfig from "../../components/themeConfig.json"; 
-
+import themeConfig from "../../components/themeConfig.json";
 
 export default function AssessmentSummary() {
   const location = useLocation();
@@ -30,22 +27,38 @@ export default function AssessmentSummary() {
   }
 
   // Determine which theme to apply - fallback to 'Default'
-  // Assuming report.industry or similar used to select the theme; adjust accordingly
   const industry = report.industry || "Default";
   const themeToUse = themeConfig[industry] || themeConfig.Default;
 
   const handleDownloadPDF = async () => {
     if (!reportRef.current) return;
+
+    // Save current viewport setting to restore it later
+    const metaViewport = document.querySelector('meta[name=viewport]');
+    const originalContent = metaViewport?.getAttribute('content') || "";
+
+    // Temporarily fix viewport to desktop width for html2canvas rendering
+    if (metaViewport) {
+      metaViewport.setAttribute("content", "width=1200");
+    }
+
     const input = reportRef.current;
-    const canvas = await html2canvas(input, { scale: 2 });
+    const canvas = await html2canvas(input, {
+      scale: 2,
+      windowWidth: 1200, // simulate desktop width
+      useCORS: true,
+    });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF("portrait", "mm", "a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const imgProps = { width: canvas.width, height: canvas.height };
-    const pdfWidth = pageWidth;
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save("assessment-report.pdf");
+
+    // Restore original viewport for normal mobile behavior
+    if (metaViewport) {
+      metaViewport.setAttribute("content", originalContent);
+    }
   };
 
   return (
@@ -82,5 +95,3 @@ export default function AssessmentSummary() {
     </Box>
   );
 }
-
-

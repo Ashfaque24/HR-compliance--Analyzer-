@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   Typography,
@@ -89,7 +89,7 @@ const dummySummaryHalf = [
   },
 ];
 
-// Recommended next steps box (unchanged)
+// Recommended next steps box
 function RecommendedNextStepsBox({ data }) {
   const fallback = {
     immediate: [],
@@ -409,11 +409,18 @@ function SectionCard({ section, idx, sectionsCount, themeConfig }) {
   );
 }
 
-export default function Summary_Repo({ data, showFull, themeConfig }) {
+export default function Summary_Repo({
+  data,
+  showFull,
+  themeConfig,
+  sectionRefs,
+  executiveSummaryRef,
+  nextStepsRef,
+}) {
   const dispatch = useDispatch();
   const { loading, error, success } = useSelector((state) => state.userReport);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [requestInitiated, setRequestInitiated] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  const [requestInitiated, setRequestInitiated] = React.useState(false);
   const session_uuid = localStorage.getItem("session_uuid");
 
   useEffect(() => {
@@ -452,6 +459,10 @@ export default function Summary_Repo({ data, showFull, themeConfig }) {
 
   const recommendedNextSteps = data.recommendedNextSteps;
 
+  // ensure sectionRefs.current is an array and reset length so old refs removed
+  if (sectionRefs && sectionRefs.current === undefined) sectionRefs.current = [];
+  if (sectionRefs && Array.isArray(sectionRefs.current)) sectionRefs.current.length = 0;
+
   return (
     <Box
       sx={{
@@ -461,20 +472,34 @@ export default function Summary_Repo({ data, showFull, themeConfig }) {
         position: "relative",
       }}
     >
-      <ExecutiveSummary data={data} themeConfig={themeConfig} />
+      {/* EXECUTIVE SUMMARY wrapped with a DIV ref so PDF generator can capture it */}
+      <div ref={executiveSummaryRef}>
+        <ExecutiveSummary data={data} themeConfig={themeConfig} />
+      </div>
+
       <Box sx={{ position: "relative" }}>
         <Box sx={isBlurred ? { ...blurStyles } : {}}>
           {(isBlurred ? dummySummary : mergedSummary).map((section, idx) => (
-            <SectionCard
+            // ATTACH a DOM ref for each section so PDF generator can render them individually
+            <div
               key={section.name || idx}
-              section={section}
-              idx={idx}
-              sectionsCount={isBlurred ? dummySummary.length : sectionsCount}
-              themeConfig={themeConfig}
-            />
+              ref={(el) => {
+                if (sectionRefs && sectionRefs.current) sectionRefs.current[idx] = el;
+              }}
+            >
+              <SectionCard
+                section={section}
+                idx={idx}
+                sectionsCount={isBlurred ? dummySummary.length : sectionsCount}
+                themeConfig={themeConfig}
+              />
+            </div>
           ))}
         </Box>
-        {!isBlurred && <RecommendedNextStepsBox data={recommendedNextSteps} />}
+
+        {/* NEXT STEPS wrapped in a ref so it's captured after sections */}
+        {!isBlurred && <div ref={nextStepsRef}><RecommendedNextStepsBox data={recommendedNextSteps} /></div>}
+
         {isBlurred && (
           <Box sx={catchyOverlayStyles}>
             <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
@@ -513,17 +538,14 @@ export default function Summary_Repo({ data, showFull, themeConfig }) {
           </Box>
         )}
       </Box>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity="success"
-          sx={{ width: "100%" }}
-        >
+        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: "100%" }}>
           Request sent! Admin will contact you soon.
         </Alert>
       </Snackbar>

@@ -1,4 +1,3 @@
-// src/components/common/CoverImageUploader.js (Corrected)
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -32,6 +31,7 @@ export default function CoverImageUploader({
   backImage,
   setFrontImage,
   setBackImage,
+  onDone, // Added prop for Done button callback
 }) {
   const dispatch = useDispatch();
 
@@ -43,7 +43,7 @@ export default function CoverImageUploader({
     saveLoading,
     saveError,
     saveSuccess,
-  
+
     newFrontFilename, 
     newBackFilename,  
   } = useSelector((state) => state.coverPage);
@@ -65,64 +65,53 @@ export default function CoverImageUploader({
     }
   }, [dispatch, session_uuid]);
 
-  // 🔥 FIX 1: Update Parent State and Reset Local File State upon successful upload
+  // Update Parent State and Reset Local File State upon successful upload
   useEffect(() => {
     if (saveSuccess) {
-      // 1. Reset local file objects
       setFrontFile(null);
       setBackFile(null);
       
-    
       if (newFrontFilename) {
         setFrontImage(newFrontFilename);
       }
       if (newBackFilename) {
         setBackImage(newBackFilename);
       }
-      
-     
+
       dispatch(fetchExistingCoverImages(session_uuid));
-      
-      
     }
     
     // Cleanup save status after success or error
     if (saveSuccess || saveError) {
         const timer = setTimeout(() => {
-            dispatch(resetSaveStatus());
-        }, 3000); // Clear status messages after 3 seconds
+          dispatch(resetSaveStatus());
+        }, 3000);
         return () => clearTimeout(timer);
     }
   }, [saveSuccess, saveError, newFrontFilename, newBackFilename, dispatch, session_uuid, setFrontImage, setBackImage]);
-  // Note: frontImage and backImage are NOT dependencies here, as we are setting them.
 
-
-  // Update front image URL preview whenever related dependencies change
+  // Update front image preview URL
   useEffect(() => {
     if (frontFile) {
-      // Priority 1: Newly selected file from local computer
       const url = URL.createObjectURL(frontFile);
       setFrontImageUrl(url);
       return () => URL.revokeObjectURL(url);
-    } else if (frontImage) { // Priority 2: Filename exists (from parent prop)
+    } else if (frontImage) {
       const selected = existingFrontImages.find((img) => img.filename === frontImage);
-      // 🔥 FIX 2: Ensure existingFrontImages is checked for the image URL
       setFrontImageUrl(selected ? getImageUrl(selected.url) : "");
     } else {
       setFrontImageUrl("");
     }
   }, [frontFile, frontImage, existingFrontImages]);
 
-  // Update back image URL preview similarly
+  // Update back image preview URL
   useEffect(() => {
     if (backFile) {
-      // Priority 1: Newly selected file from local computer
       const url = URL.createObjectURL(backFile);
       setBackImageUrl(url);
       return () => URL.revokeObjectURL(url);
-    } else if (backImage) { // Priority 2: Filename exists (from parent prop)
+    } else if (backImage) {
       const selected = existingBackImages.find((img) => img.filename === backImage);
-      // 🔥 FIX 2: Ensure existingBackImages is checked for the image URL
       setBackImageUrl(selected ? getImageUrl(selected.url) : "");
     } else {
       setBackImageUrl("");
@@ -132,8 +121,8 @@ export default function CoverImageUploader({
   const handleFileChange = (setter, resetSelector) => (e) => {
     const file = e.target.files[0];
     if (file) {
-      setter(file); // setFrontFile(file)
-      resetSelector(""); // setFrontImage("") - clear selected existing image
+      setter(file);
+      resetSelector("");
     }
   };
 
@@ -148,17 +137,16 @@ export default function CoverImageUploader({
     if (backFile) formData.append("backImage", backFile);
 
     dispatch(saveCoverImages({ session_uuid, formData }));
-    // No need to manually update state here, as it's done in the saveSuccess useEffect
   };
 
   const handleSelectExisting = (filename, type) => {
     if (type === "front") {
-      setFrontImage(filename); // Update parent state with selected filename
-      setFrontFile(null); // Clear local file (upload) state
+      setFrontImage(filename);
+      setFrontFile(null);
       setOpenFrontDialog(false);
     } else {
-      setBackImage(filename); // Update parent state with selected filename
-      setBackFile(null); // Clear local file (upload) state
+      setBackImage(filename);
+      setBackFile(null);
       setOpenBackDialog(false);
     }
   };
@@ -276,7 +264,6 @@ export default function CoverImageUploader({
               Front Page Image (A4 size)
             </Typography>
 
-            {/* Selected/Preview Image */}
             {(frontFile || frontImageUrl) && (
               <Paper elevation={3} sx={{ p: 2, mb: 2, position: "relative" }}>
                 <Box
@@ -300,8 +287,8 @@ export default function CoverImageUploader({
                     "&:hover": { backgroundColor: "rgba(255,255,255,1)" },
                   }}
                   onClick={() => {
-                    setFrontFile(null); // Clear local file state
-                    setFrontImage(""); // Clear parent's selected filename state
+                    setFrontFile(null);
+                    setFrontImage("");
                   }}
                 >
                   <Close />
@@ -312,7 +299,6 @@ export default function CoverImageUploader({
               </Paper>
             )}
 
-            {/* Action Buttons */}
             <Stack spacing={1}>
               <Button
                 variant="outlined"
@@ -345,7 +331,6 @@ export default function CoverImageUploader({
               Back Page Image (A4 size)
             </Typography>
 
-            {/* Selected/Preview Image */}
             {(backFile || backImageUrl) && (
               <Paper elevation={3} sx={{ p: 2, mb: 2, position: "relative" }}>
                 <Box
@@ -381,7 +366,6 @@ export default function CoverImageUploader({
               </Paper>
             )}
 
-            {/* Action Buttons */}
             <Stack spacing={1}>
               <Button
                 variant="outlined"
@@ -409,7 +393,6 @@ export default function CoverImageUploader({
           </Grid>
         </Grid>
 
-        {/* Status Messages */}
         {saveLoading && (
           <Alert severity="info" sx={{ mt: 3 }}>
             <Stack direction="row" spacing={2} alignItems="center">
@@ -431,7 +414,6 @@ export default function CoverImageUploader({
           </Alert>
         )}
 
-        {/* Upload Button */}
         <Stack justifyContent="flex-end" direction="row" sx={{ mt: 3 }}>
           <Button
             variant="contained"
@@ -445,7 +427,19 @@ export default function CoverImageUploader({
           </Button>
         </Stack>
 
-        {/* Image Selection Dialogs */}
+        {/* Done Button to close the modal */}
+        <Stack justifyContent="flex-end" direction="row" sx={{ mt: 2 }}>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={onDone}
+            size="large"
+            sx={{ minWidth: 120 }}
+          >
+            Done
+          </Button>
+        </Stack>
+
         <ImageSelectionDialog
           open={openFrontDialog}
           onClose={() => setOpenFrontDialog(false)}
@@ -465,4 +459,3 @@ export default function CoverImageUploader({
     </Card>
   );
 }
-

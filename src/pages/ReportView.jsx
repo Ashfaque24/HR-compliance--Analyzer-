@@ -18,7 +18,7 @@ import {
   Select,
   MenuItem,
   Chip,
-  CircularProgress, // Added for loader inside button
+  CircularProgress,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -29,7 +29,14 @@ export default function ReportView() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // Ref to the visible on-screen content container (not used for PDF capturing here)
   const contentRef = useRef();
+
+  // PDF-specific refs
+  const companyDetailsRef = useRef();     // company card (company, id, submitted, contact)
+  const sectionRefs = useRef([]);         // array of section DOM refs (set by Summary_Repo)
+  const executiveSummaryRef = useRef();   // executive summary block
+  const nextStepsRef = useRef();          // recommended next steps block
 
   const dropdownOptions = Object.keys(themeConfig);
   const [selectedDomain, setSelectedDomain] = useState("Default");
@@ -37,18 +44,15 @@ export default function ReportView() {
   const { report, loading, error } = useSelector((state) => state.adminReport);
 
   const [generatePdfFunc, setGeneratePdfFunc] = useState(null);
-  const [pdfLoading, setPdfLoading] = useState(false); // Loader only in the button
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
     if (id) dispatch(fetchAdminReport(id));
     return () => dispatch(clearReport());
   }, [id, dispatch]);
 
-  // Show loading spinner while fetching report (full page)
-  if (loading)
-    return <LoadingSpinner message="Loading report..." />;
+  if (loading) return <LoadingSpinner message="Loading report..." />;
 
-  // Show error if report fetch failed
   if (error)
     return (
       <Box sx={{ p: 5 }}>
@@ -56,7 +60,6 @@ export default function ReportView() {
       </Box>
     );
 
-  // Show error if report not found
   if (!report)
     return (
       <Box sx={{ p: 5 }}>
@@ -72,7 +75,6 @@ export default function ReportView() {
   const frontCoverPresent = !!details.frontPageImage;
   const backCoverPresent = !!details.backPageImage;
 
-  // Download PDF button click handler
   const onDownloadClick = () => {
     if (generatePdfFunc) {
       setPdfLoading(true);
@@ -115,7 +117,7 @@ export default function ReportView() {
             variant="contained"
             color="primary"
             onClick={onDownloadClick}
-            disabled={pdfLoading} // Disable while generating PDF
+            disabled={pdfLoading}
             sx={{
               width: { xs: "100%", sm: "auto" },
               background: "#18a16e",
@@ -125,11 +127,7 @@ export default function ReportView() {
             {pdfLoading ? (
               <>
                 Generating...
-                <CircularProgress
-                  size={18}
-                  color="inherit"
-                  sx={{ ml: 1 }}
-                />
+                <CircularProgress size={18} color="inherit" sx={{ ml: 1 }} />
               </>
             ) : (
               "Download PDF"
@@ -180,7 +178,7 @@ export default function ReportView() {
         )}
       </Stack>
 
-      {/* Main Report Content */}
+      {/* Main Report Content (on-screen) */}
       <Box
         ref={contentRef}
         sx={{
@@ -189,49 +187,62 @@ export default function ReportView() {
           boxSizing: "border-box",
         }}
       >
-        <Card elevation={4} sx={{ p: 3, borderRadius: 3 }}>
-          <CardContent>
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
-              {report.company}
-            </Typography>
-
-            <Divider sx={{ my: 1 }} />
-
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={3}
-              alignItems={{ xs: "flex-start", sm: "center" }}
-              sx={{ mb: 1 }}
-            >
-              <Typography>
-                <b>ID:</b> {report.id}
+        {/* COMPANY DETAILS: capture this Card as one PDF block */}
+        <div ref={companyDetailsRef}>
+          <Card elevation={4} sx={{ p: 3, borderRadius: 3 }}>
+            <CardContent>
+              <Typography variant="h4" fontWeight="bold" gutterBottom>
+                {report.company}
               </Typography>
-              <Typography>
-                <b>Status:</b> {report.status}
-              </Typography>
-              <Typography>
-                <b>Submitted:</b> {submittedDate}
-              </Typography>
-            </Stack>
 
-            <Typography sx={{ mb: 1 }}>
-              <b>Contact:</b> {contactInfo}
-            </Typography>
-          </CardContent>
-        </Card>
+              <Divider sx={{ my: 1 }} />
 
-        <Summary_Repo data={details} showFull themeConfig={currentThemeConfig} />
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={3}
+                alignItems={{ xs: "flex-start", sm: "center" }}
+                sx={{ mb: 1 }}
+              >
+                <Typography>
+                  <b>ID:</b> {report.id}
+                </Typography>
+                <Typography>
+                  <b>Status:</b> {report.status}
+                </Typography>
+                <Typography>
+                  <b>Submitted:</b> {submittedDate}
+                </Typography>
+              </Stack>
+
+              <Typography sx={{ mb: 1 }}>
+                <b>Contact:</b> {contactInfo}
+              </Typography>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* PASS sectionRefs + exec + nextSteps refs to Summary_Repo */}
+        <Summary_Repo
+          data={details}
+          showFull
+          themeConfig={currentThemeConfig}
+          sectionRefs={sectionRefs}
+          executiveSummaryRef={executiveSummaryRef}
+          nextStepsRef={nextStepsRef}
+        />
       </Box>
 
-      {/* PDF Generator */}
+      {/* PDF Generator: pass all refs */}
       <ReportPdfGenerator
-  report={report}
-  details={details}
-  contentRef={contentRef}
-  onGeneratePdf={(h) => setGeneratePdfFunc(() => h)}
-  onPdfDone={() => setPdfLoading(false)}
-/>
-
+        report={report}
+        details={details}
+        companyDetailsRef={companyDetailsRef}
+        executiveSummaryRef={executiveSummaryRef}
+        sectionRefs={sectionRefs}
+        nextStepsRef={nextStepsRef}
+        onGeneratePdf={(h) => setGeneratePdfFunc(() => h)}
+        onPdfDone={() => setPdfLoading(false)}
+      />
     </Box>
   );
 }

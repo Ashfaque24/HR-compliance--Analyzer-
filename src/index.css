@@ -71,7 +71,35 @@ button:focus-visible {
   }
 }
 
+
+
+/* Prevent breaking inside section cards */
 .avoid-break {
-  page-break-inside: avoid !important;
-  break-inside: avoid !important;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  -moz-column-break-inside: avoid;
+}
+
+
+
+/* FORCE DESKTOP for PDF container */
+.pdf-desktop * {
+  width: auto !important;
+  max-width: 1200px !important;
+}
+
+.pdf-desktop .MuiGrid-root {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+}
+
+.pdf-desktop .MuiGrid-item {
+  width: 33% !important;
+}
+
+.pdf-desktop .MuiBox-root,
+.pdf-desktop .MuiStack-root {
+  flex-direction: row !important;
 }
