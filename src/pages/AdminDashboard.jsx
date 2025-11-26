@@ -134,13 +134,14 @@ export default function AdminDashboard() {
       {selectedSection ? (
         <Stack direction="row" alignItems="center" spacing={1} mb={2}>
           <Button
-            variant="outlined"
+            variant="contained"
             startIcon={<ArrowLeft />}
             onClick={() => {
               setSelectedSection(null);
               setActiveView("overview");
             }}
             size={isSmDown ? "small" : "medium"}
+            sx={{ background: "#18a16e" }}
             fullWidth={isSmDown}
           >
             Back

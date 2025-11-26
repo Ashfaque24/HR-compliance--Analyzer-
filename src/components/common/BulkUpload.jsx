@@ -27,7 +27,7 @@ export default function BulkUpload() {
     (state) => state.bulkUpload || {}
   );
 
-  // ✅ Path to example Excel file (inside public/assets)
+  //  Path to example Excel file (inside public/assets)
   const exampleFileUrl = "/assets/Compliance_Questions.xlsx";
 
   // Trigger hidden file input
@@ -38,7 +38,7 @@ export default function BulkUpload() {
   };
 
   /**
-   * ✅ Group Excel rows by Section & Question
+   *  Group Excel rows by Section & Question
    * Also maps Options + Scores into [{ name, score }]
    */
   const groupRows = (rows) => {
@@ -98,7 +98,7 @@ export default function BulkUpload() {
         dispatch(bulkUploadQuestions(uploadPayload))
           .unwrap()
           .then(() => {
-            alert("✅ Bulk upload successful!");
+            alert(" Bulk upload successful!");
             setOpen(false);
           })
           .catch((err) => {
@@ -179,7 +179,7 @@ export default function BulkUpload() {
               variant="contained"
               component="a"
               href={exampleFileUrl}
-              download="Example_Compliance_Questions.xlsx" // ✅ forces download
+              download="Example_Compliance_Questions.xlsx" 
               sx={{ ml: 2, backgroundColor:"#18a16e" }}
             >
               Download Example
@@ -189,7 +189,7 @@ export default function BulkUpload() {
           {/* Status Messages */}
           {success && (
             <Typography mt={2} color="success.main">
-              ✅ Uploaded successfully!
+               Uploaded successfully!
             </Typography>
           )}
           {error && (

@@ -12,11 +12,10 @@ import {
   Button,
   Stack,
   TextField,
-  MenuItem,
-  Select,
   InputAdornment,
   useTheme,
   useMediaQuery,
+  Pagination,
 } from "@mui/material";
 import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
@@ -32,28 +31,36 @@ export default function ReportPage() {
   const isSmDown = useMediaQuery(theme.breakpoints.down("sm"));
   const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
 
-  const { submissions, loading, error } = useSelector(
+  const { submissions, loading, error, pagination } = useSelector(
     (state) => state.reportInfo
   );
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All Status");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    dispatch(fetchAllSubmissions());
-  }, [dispatch]);
+    const delay = setTimeout(() => {
+      dispatch(
+        fetchAllSubmissions({
+          page,
+          pageSize: 20,
+          search: searchQuery,
+        })
+      );
+    }, 500);
 
-  const reportsArray = Array.isArray(submissions) ? submissions : [];
+    return () => clearTimeout(delay);
+  }, [dispatch, page, searchQuery]);
 
-  const filteredReports = reportsArray.filter((r) => {
-    const query = searchQuery.toLowerCase();
-    const companyMatch = r.company.toLowerCase().includes(query);
-    const nameMatch = r.full_name.toLowerCase().includes(query);
-    const emailMatch = (r.email || "").toLowerCase().includes(query);
+  const handlePageChange = (event, value) => {
+    setPage(value);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
-    const matchesSearch = companyMatch || nameMatch || emailMatch;
-    return matchesSearch;
-  });
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setPage(1);
+  };
 
   if (loading) return <LoadingSpinner message="Loading reports..." />;
 
@@ -68,6 +75,8 @@ export default function ReportPage() {
     if (!dateStr) return "-";
     return new Date(dateStr).toLocaleDateString();
   };
+
+  const reportsArray = Array.isArray(submissions) ? submissions : [];
 
   return (
     <Box p={{ xs: 2, sm: 3, md: 4 }}>
@@ -111,13 +120,13 @@ export default function ReportPage() {
         spacing={2}
         mb={3}
         alignItems={{ xs: "stretch", sm: "center" }}
+        justifyContent="space-between"
         flexWrap="wrap"
       >
-        {/* Search */}
         <TextField
           placeholder="Search by company, full name, or email..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={handleSearchChange}
           variant="outlined"
           size="small"
           fullWidth={isSmDown}
@@ -133,6 +142,7 @@ export default function ReportPage() {
             ),
           }}
         />
+
       </Stack>
 
       {/* ======= TABLE ======= */}
@@ -142,11 +152,6 @@ export default function ReportPage() {
           borderRadius: 2,
           overflowX: "auto",
           boxShadow: "0px 2px 8px rgba(0,0,0,0.05)",
-          "&::-webkit-scrollbar": { height: 6 },
-          "&::-webkit-scrollbar-thumb": {
-            backgroundColor: "#ccc",
-            borderRadius: 3,
-          },
         }}
       >
         <Table sx={{ minWidth: 900 }}>
@@ -171,8 +176,8 @@ export default function ReportPage() {
           </TableHead>
 
           <TableBody>
-            {filteredReports.length ? (
-              filteredReports.map((row) => (
+            {reportsArray.length ? (
+              reportsArray.map((row) => (
                 <TableRow key={row.id} hover>
                   <TableCell>{row.company}</TableCell>
                   <TableCell>{row.full_name}</TableCell>
@@ -183,28 +188,22 @@ export default function ReportPage() {
                   <TableCell>{formatDate(row.started_at)}</TableCell>
                   <TableCell>{row.isEnquired ? "Yes" : "No"}</TableCell>
 
-                  {/* ======= ACTION BUTTONS ======= */}
                   <TableCell>
                     <Stack
                       direction={isSmDown ? "column" : "row"}
                       spacing={1}
                       alignItems="center"
                       justifyContent={isSmDown ? "center" : "flex-start"}
-                      sx={{ width: "100%" }}
                     >
-                      {/* Edit */}
                       <Button
                         size={isSmDown ? "small" : "medium"}
                         variant="contained"
-                        startIcon={
-                          <Icon icon="tabler:edit" width={20} height={20} />
-                        }
+                        startIcon={<Icon icon="tabler:edit" width={20} />}
                         onClick={() =>
                           navigate(`/admin/report/edit/${row.session_uuid}`)
                         }
                         sx={{
                           minWidth: 90,
-                          width: isSmDown ? "100%" : "auto",
                           background: "#18a16e",
                           textTransform: "none",
                         }}
@@ -212,19 +211,15 @@ export default function ReportPage() {
                         Edit
                       </Button>
 
-                      {/* View */}
                       <Button
                         size={isSmDown ? "small" : "medium"}
                         variant="contained"
-                        startIcon={
-                          <Icon icon="mdi:eye-outline" width={20} height={20} />
-                        }
+                        startIcon={<Icon icon="mdi:eye-outline" width={20} />}
                         onClick={() =>
                           navigate(`/admin/report/${row.session_uuid}`)
                         }
                         sx={{
                           minWidth: 90,
-                          width: isSmDown ? "100%" : "auto",
                           background: "#18a16e",
                           textTransform: "none",
                         }}
@@ -238,13 +233,68 @@ export default function ReportPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
-                  No reports found.
+                  {searchQuery
+                    ? "No reports found matching your search."
+                    : "No reports found."}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </TableContainer>
+
+
+      {/* ===  PREVIOUS / NEXT ALWAYS VISIBLE === */}
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 2,
+          mt: 3,
+        }}
+      >
+        <Button
+          variant="contained"
+          disabled={page <= 1}
+          onClick={() => setPage((prev) => prev - 1)}
+          sx={{ background: "#18a16e" }}
+        >
+          Previous
+        </Button>
+
+        <Typography>
+          Page {page} of {pagination.totalPages || 1}
+        </Typography>
+
+        <Button
+          variant="contained"
+          disabled={page >= (pagination.totalPages || 1)}
+          onClick={() => setPage((prev) => prev + 1)}
+          sx={{ background: "#18a16e" }}
+        >
+          Next
+        </Button>
+      </Box>
+
+      {/* ======= PAGINATION ======= */}
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+        <Pagination
+          count={pagination.totalPages || 1}
+          page={page}
+          onChange={handlePageChange}
+          color="primary"
+          showFirstButton
+          showLastButton
+          sx={{
+            "& .MuiPaginationItem-root.Mui-selected": {
+              backgroundColor: "#18a16e",
+              color: "white",
+            },
+          }}
+        />
+      </Box>
     </Box>
   );
 }

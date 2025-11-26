@@ -43,7 +43,7 @@ import CoverImageUploader from "../components/common/CoverImageUploader";
 const graphTypes = ["None", "Gauge Chart", "Star Chart", "Circular Chart"];
 
 // Shared chip styling
-const chipStyles = { fontWeight: 600, fontSize: 13, px: 1.2 };
+const chipStyles = { fontWeight: 600, fontSize: 13, px: 1.2,minWidth: 150, };
 
 export default function EditReportPage() {
   // Get session UUID from URL
@@ -320,7 +320,12 @@ export default function EditReportPage() {
       </Box>
 
       {/* Cover Image Modal */}
-      <Dialog open={coverModalOpen} onClose={() => setCoverModalOpen(false)} maxWidth="md" fullWidth>
+      <Dialog
+        open={coverModalOpen}
+        onClose={() => setCoverModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>
           Edit Cover Page Images
           <IconButton
@@ -347,8 +352,15 @@ export default function EditReportPage() {
       {/* SECTION ACCORDIONS */}
       <Box>
         {form?.details?.summary?.map((section, idx) => (
-          <Accordion key={section.name} defaultExpanded sx={{ mb: 2, boxShadow: 3, borderRadius: 2 }}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ bgcolor: "#f2f6ff", mb: 3 }}>
+          <Accordion
+            key={section.name}
+            defaultExpanded
+            sx={{ mb: 2, boxShadow: 3, borderRadius: 2 }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              sx={{ bgcolor: "#f2f6ff", mb: 3 }}
+            >
               {/* Section Header */}
               <Box
                 sx={{
@@ -361,10 +373,31 @@ export default function EditReportPage() {
                 <Typography sx={{ fontWeight: 600 }}>{section.name}</Typography>
 
                 {/* Section chips */}
-                <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
-                  <Chip label={`Score: ${section.score} / ${section.maxScore}`} color="primary" sx={chipStyles} />
-                  <Chip label={`Completion: ${section.completionRate}`} color="success" sx={chipStyles} />
-                  <Chip label={`Graph: ${section.graphType || "None"}`} color="warning" sx={chipStyles} />
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={1}
+                  sx={{
+                    flexWrap: "wrap",
+                    alignItems: { xs: "flex-start", sm: "center" },
+                    gap: 1,
+                    mt: 1,
+                  }}
+                >
+                  <Chip
+                    label={`Score: ${section.score} / ${section.maxScore}`}
+                    color="primary"
+                    sx={chipStyles}
+                  />
+                  <Chip
+                    label={`Completion: ${section.completionRate}`}
+                    color="success"
+                    sx={chipStyles}
+                  />
+                  <Chip
+                    label={`Graph: ${section.graphType || "None"}`}
+                    color="warning"
+                    sx={chipStyles}
+                  />
                 </Stack>
               </Box>
             </AccordionSummary>
@@ -446,7 +479,10 @@ export default function EditReportPage() {
       </Box>
 
       {/* NEXT STEPS SECTION */}
-      <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 3, bgcolor: "#f8fcff" }}>
+      <Paper
+        elevation={3}
+        sx={{ p: 3, mb: 3, borderRadius: 3, bgcolor: "#f8fcff" }}
+      >
         <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>
           Recommended Next Steps
         </Typography>
@@ -503,8 +539,15 @@ export default function EditReportPage() {
       </Paper>
 
       {/* SAVE + CANCEL BUTTONS */}
-      <Paper elevation={0} sx={{ mt: 3, p: 2, bgcolor: "#fafcff", borderRadius: 2 }}>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="flex-end">
+      <Paper
+        elevation={0}
+        sx={{ mt: 3, p: 2, bgcolor: "#fafcff", borderRadius: 2 }}
+      >
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          justifyContent="flex-end"
+        >
           <Button
             variant="contained"
             onClick={handleSave}
@@ -523,7 +566,11 @@ export default function EditReportPage() {
             variant="contained"
             color="secondary"
             onClick={() => navigate(-1)}
-            sx={{ px: 4, width: { xs: "100%", sm: "auto" }, background: "#18a16e" }}
+            sx={{
+              px: 4,
+              width: { xs: "100%", sm: "auto" },
+              background: "#18a16e",
+            }}
           >
             Cancel
           </Button>
