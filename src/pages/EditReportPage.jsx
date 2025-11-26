@@ -45,23 +45,12 @@ const graphTypes = ["None", "Gauge Chart", "Star Chart", "Circular Chart"];
 // Shared chip styling
 const chipStyles = { fontWeight: 600, fontSize: 13, px: 1.2 };
 
-// Unused but kept for compatibility
-const blankNextSteps = {
-  immediate: [],
-  shortTerm: [],
-  longTerm: [],
-};
-
 export default function EditReportPage() {
   // Get session UUID from URL
   const { id: session_uuid } = useParams();
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  // Get images stored in redux (cover page)
-  const { frontImage: reduxFrontImage, backImage: reduxBackImage } =
-    useSelector((state) => state.coverPage);
 
   // Get edit report data and statuses
   const { report, loading, error, saving, saveError } = useSelector(
@@ -124,16 +113,20 @@ export default function EditReportPage() {
         );
       }
 
-      // Ensure both images exist
-      updatedReport.frontPageImage = updatedReport.frontPageImage || "";
-      updatedReport.backPageImage = updatedReport.backPageImage || "";
+      // FIX: Extract cover images from details object
+      const frontPageImg = updatedReport.details?.frontPageImage || "";
+      const backPageImg = updatedReport.details?.backPageImage || "";
+
+      // Ensure both images exist at top level for saving
+      updatedReport.frontPageImage = frontPageImg;
+      updatedReport.backPageImage = backPageImg;
 
       // Update form state
       setForm(updatedReport);
 
-      // Set local image states
-      setFrontImage(updatedReport.frontPageImage);
-      setBackImage(updatedReport.backPageImage);
+      // FIX: Set local image states from the fetched report
+      setFrontImage(frontPageImg);
+      setBackImage(backPageImg);
     }
   }, [report]);
 
@@ -322,7 +315,7 @@ export default function EditReportPage() {
           onClick={() => setCoverModalOpen(true)}
           sx={{ fontWeight: 700, background: "#18a16e" }}
         >
-          Edit Cover Page Images
+          Edit Cover Page Images {coverPagesUploaded && "✓"}
         </Button>
       </Box>
 
