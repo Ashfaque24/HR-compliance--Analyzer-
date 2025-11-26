@@ -19,7 +19,7 @@ export const getImageUrl = (relativeUrl) => {
     return relativeUrl;
   }
 
-  let baseUrl = "http://localhost:3000/uploads/coverpages/"; // default fallback
+  let baseUrl = process.env.VITE_API_URL; // default fallback
 
   // Try to read environment variable safely
   if (typeof process !== "undefined" && process.env && process.env.REACT_APP_API_BASE_URL) {
