@@ -22,11 +22,20 @@ export default function Landing() {
     company: "",
   });
 
+  const [errors, setErrors] = useState({
+    fullName: "",
+    phone: "",
+  });
+
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
 
   function handleChange(e) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Clear error when user types
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: "" });
+    }
   }
 
   const handleApiSubmit = async () => {
@@ -45,7 +54,6 @@ export default function Landing() {
       if (response.session_uuid) {
         localStorage.setItem("session_uuid", response.session_uuid);
       } else {
-        alert("Missing session ID from server response.");
         throw new Error("No session_uuid in response");
       }
       return response;
@@ -57,6 +65,31 @@ export default function Landing() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+  
+    // Reset errors
+    setErrors({ fullName: "", phone: "" });
+  
+    // Validation
+    let valid = true;
+  
+    // Name validation: at least 3 letters, no numbers
+    const nameValue = formData.fullName.trim();
+    if (nameValue.length < 3) {
+      setErrors((prev) => ({ ...prev, fullName: "Name must be at least 3 letters." }));
+      valid = false;
+    } else if (/\d/.test(nameValue)) {
+      setErrors((prev) => ({ ...prev, fullName: "Name cannot contain numbers." }));
+      valid = false;
+    }
+  
+    // Phone validation: exactly 10 digits
+    if (!/^\d{10}$/.test(formData.phone.trim())) {
+      setErrors((prev) => ({ ...prev, phone: "Phone number must be exactly 10 digits." }));
+      valid = false;
+    }
+  
+    if (!valid) return;
+  
     setSubmitting(true);
     try {
       await handleApiSubmit();
@@ -67,14 +100,14 @@ export default function Landing() {
       setSubmitting(false);
     }
   }
-
+  
   return (
     <Box
       sx={{
         display: "flex",
         flexDirection: { xs: "column", md: "row" },
         minHeight: "100vh",
-        fontFamily: "Helvetica, Arial, sans-serif", // ← FONT UPDATED HERE
+        fontFamily: "Helvetica, Arial, sans-serif",
         width: "100%",
       }}
     >
@@ -114,7 +147,7 @@ export default function Landing() {
             m: { xs: "auto", md: "unset" },
           }}
           direction="column"
-          alignItems= "flex-start" 
+          alignItems="flex-start"
         >
           {/* Feature 1 */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
@@ -130,9 +163,7 @@ export default function Landing() {
               <PeopleIcon />
             </Paper>
             <Box>
-              <Typography fontWeight="bold">
-                Registration & Licensing
-              </Typography>
+              <Typography fontWeight="bold">Registration & Licensing</Typography>
               <Typography variant="caption" color="grey.300">
                 MCA, ESIC, EPFO, and regulatory compliance
               </Typography>
@@ -153,9 +184,7 @@ export default function Landing() {
               <ShieldIcon />
             </Paper>
             <Box>
-              <Typography fontWeight="bold">
-                Employee Welfare & Benefits
-              </Typography>
+              <Typography fontWeight="bold">Employee Welfare & Benefits</Typography>
               <Typography variant="caption" color="grey.300">
                 Statutory benefits and welfare compliance
               </Typography>
@@ -176,9 +205,7 @@ export default function Landing() {
               <DescriptionIcon />
             </Paper>
             <Box>
-              <Typography fontWeight="bold">
-                Documentation & Governance
-              </Typography>
+              <Typography fontWeight="bold">Documentation & Governance</Typography>
               <Typography variant="caption" color="grey.300">
                 Policies, POSH compliance, and workplace governance
               </Typography>
@@ -217,9 +244,7 @@ export default function Landing() {
             Start Your Assessment
           </Typography>
 
-          <Typography>
-            Enter your details to begin the compliance evaluation
-          </Typography>
+          <Typography>Enter your details to begin the compliance evaluation</Typography>
 
           <TextField
             label="Full Name *"
@@ -229,6 +254,8 @@ export default function Landing() {
             onChange={handleChange}
             required
             fullWidth
+            error={!!errors.fullName}
+            helperText={errors.fullName}
           />
 
           <TextField
@@ -251,6 +278,8 @@ export default function Landing() {
             onChange={handleChange}
             required
             fullWidth
+            error={!!errors.phone}
+            helperText={errors.phone}
           />
 
           <TextField
@@ -270,16 +299,11 @@ export default function Landing() {
             sx={{ mt: 2, background: "#18a16e" }}
             disabled={submitting}
           >
-            {submitting ? (
-              <LoadingSpinner size={24} />
-            ) : (
-              "Start Compliance Assessment"
-            )}
+            {submitting ? <LoadingSpinner size={24} /> : "Start Compliance Assessment"}
           </Button>
 
           <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-            Your information is secure and will only be used for generating your
-            compliance report.
+            Your information is secure and will only be used for generating your compliance report.
           </Typography>
         </Box>
       </Box>

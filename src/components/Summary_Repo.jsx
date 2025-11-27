@@ -22,11 +22,9 @@ import { CircularProgressWithLabel } from "./graph/CircularProgressWithLabel";
 import { useDispatch, useSelector } from "react-redux";
 import { requestFullReport } from "../redux/features/userReportSlice";
 
-// Use global font for consistency
 const reportFont = "Helvetica, Arial, sans-serif";
 const borderColor = blue[200];
 
-// Blurred styles for restricted view
 const blurStyles = {
   filter: "blur(5px)",
   pointerEvents: "none",
@@ -35,7 +33,6 @@ const blurStyles = {
   overflow: "hidden",
 };
 
-// Overlay for blurred/locked view
 const catchyOverlayStyles = {
   position: "absolute",
   top: 0,
@@ -59,7 +56,6 @@ const catchyOverlayStyles = {
   fontSize: { xs: "1.2rem", sm: "1.5rem" },
 };
 
-// Dummy summary for blurred state
 const dummySummaryHalf = [
   {
     name: "Registration & Licensing",
@@ -89,7 +85,7 @@ const dummySummaryHalf = [
   },
 ];
 
-// Recommended next steps box
+// VERTICAL Recommended next steps box (layout only changed)
 function RecommendedNextStepsBox({ data }) {
   const fallback = {
     immediate: [],
@@ -134,11 +130,13 @@ function RecommendedNextStepsBox({ data }) {
         >
           Recommended Next Steps
         </Typography>
+
+        {/* Always vertical stack */}
         <Box
           sx={{
             display: "flex",
             gap: 2,
-            flexDirection: { xs: "column", md: "row" },
+            flexDirection: "column",
           }}
         >
           {[
@@ -178,7 +176,7 @@ function RecommendedNextStepsBox({ data }) {
                 borderRadius: 2.5,
                 p: { xs: 2, sm: 2.5, md: 3 },
                 width: "100%",
-                minHeight: { xs: "auto", md: 180 },
+                minHeight: "auto",
                 display: "flex",
                 flexDirection: "column",
                 boxSizing: "border-box",
@@ -243,17 +241,14 @@ function RecommendedNextStepsBox({ data }) {
   );
 }
 
-// SectionCard receives themeConfig for header colors and passes all section data for rendering
 function SectionCard({ section, idx, sectionsCount, themeConfig }) {
   if (!section) return null;
   const sectionMax = section.maxScore || section.mxmScore;
-  // Use theme background color if available, fallback to blue
   const headerBgColor = themeConfig?.headerBgColor || blue[50];
   const headerTextColor = blue[700];
 
   return (
     <Box sx={{ mb: { xs: 3, sm: 4 }, fontFamily: reportFont }}>
-      {/* Section header with name, score, completion rate, and graph */}
       <Box
         sx={{
           bgcolor: headerBgColor,
@@ -333,7 +328,6 @@ function SectionCard({ section, idx, sectionsCount, themeConfig }) {
           </Box>
         </Box>
       </Box>
-      {/* Body card: strengths, gaps, recommendations */}
       <Card
         variant="outlined"
         sx={{
@@ -363,8 +357,8 @@ function SectionCard({ section, idx, sectionsCount, themeConfig }) {
                     key === "strengths"
                       ? green[700]
                       : key === "gaps"
-                      ? red[700]
-                      : blue[700]
+                        ? red[700]
+                        : blue[700]
                   }
                   mb={2}
                   sx={{ fontSize: { xs: 16, sm: 18 } }}
@@ -372,8 +366,8 @@ function SectionCard({ section, idx, sectionsCount, themeConfig }) {
                   {key === "strengths"
                     ? "Strengths"
                     : key === "gaps"
-                    ? "Gaps"
-                    : "Action Recommendations"}
+                      ? "Gaps"
+                      : "Action Recommendations"}
                 </Typography>
 
                 {section[key].length === 0 ? (
@@ -459,9 +453,10 @@ export default function Summary_Repo({
 
   const recommendedNextSteps = data.recommendedNextSteps;
 
-  // ensure sectionRefs.current is an array and reset length so old refs removed
-  if (sectionRefs && sectionRefs.current === undefined) sectionRefs.current = [];
-  if (sectionRefs && Array.isArray(sectionRefs.current)) sectionRefs.current.length = 0;
+  if (sectionRefs && sectionRefs.current === undefined)
+    sectionRefs.current = [];
+  if (sectionRefs && Array.isArray(sectionRefs.current))
+    sectionRefs.current.length = 0;
 
   return (
     <Box
@@ -472,7 +467,6 @@ export default function Summary_Repo({
         position: "relative",
       }}
     >
-      {/* EXECUTIVE SUMMARY wrapped with a DIV ref so PDF generator can capture it */}
       <div ref={executiveSummaryRef}>
         <ExecutiveSummary data={data} themeConfig={themeConfig} />
       </div>
@@ -480,11 +474,11 @@ export default function Summary_Repo({
       <Box sx={{ position: "relative" }}>
         <Box sx={isBlurred ? { ...blurStyles } : {}}>
           {(isBlurred ? dummySummary : mergedSummary).map((section, idx) => (
-            // ATTACH a DOM ref for each section so PDF generator can render them individually
             <div
               key={section.name || idx}
               ref={(el) => {
-                if (sectionRefs && sectionRefs.current) sectionRefs.current[idx] = el;
+                if (sectionRefs && sectionRefs.current)
+                  sectionRefs.current[idx] = el;
               }}
             >
               <SectionCard
@@ -497,8 +491,11 @@ export default function Summary_Repo({
           ))}
         </Box>
 
-        {/* NEXT STEPS wrapped in a ref so it's captured after sections */}
-        {!isBlurred && <div ref={nextStepsRef}><RecommendedNextStepsBox data={recommendedNextSteps} /></div>}
+        {!isBlurred && (
+          <div ref={nextStepsRef}>
+            <RecommendedNextStepsBox data={recommendedNextSteps} />
+          </div>
+        )}
 
         {isBlurred && (
           <Box sx={catchyOverlayStyles}>
@@ -526,13 +523,15 @@ export default function Summary_Repo({
                 {error}
               </Typography>
             )}
-            <Typography variant="body2" sx={{ mt: 2 }}>
-              <ContactMailIcon sx={{ verticalAlign: "middle" }} /> Email:
+            <Typography variant="body2">
               <a
-                href={`mailto:${import.meta.env.VITE_EMAIL}`}
-                style={{ marginLeft: 5 }}
+                href="https://mail.google.com/mail/?view=cm&to=connect@hrbschool.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "inherit", textDecoration: "none" }}
               >
-                {import.meta.env.VITE_EMAIL}
+                <ContactMailIcon sx={{ verticalAlign: "middle" }} />
+                &nbsp;connect@hrbschool.in
               </a>
             </Typography>
           </Box>
@@ -545,7 +544,11 @@ export default function Summary_Repo({
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: "100%" }}>
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
           Request sent! Admin will contact you soon.
         </Alert>
       </Snackbar>

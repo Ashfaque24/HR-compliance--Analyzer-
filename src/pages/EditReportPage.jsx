@@ -487,55 +487,56 @@ export default function EditReportPage() {
           Recommended Next Steps
         </Typography>
 
-        <Grid container spacing={2}>
-          {/* Immediate */}
-          <Grid item xs={12} md={4}>
-            <Box sx={{ p: 2 }}>
-              <Typography fontWeight="bold" sx={{ mb: 1, color: "#b80e0e" }}>
-                Immediate (0-30 days)
-              </Typography>
-              <TextField
-                multiline
-                minRows={4}
-                fullWidth
-                value={form.recommendedNextSteps?.immediate?.join("\n") || ""}
-                onChange={handleNextStepChange("immediate")}
-              />
-            </Box>
-          </Grid>
+        <Grid container spacing={2} direction="column">
+  {/* Immediate */}
+  <Grid item xs={12}>
+    <Box sx={{ p: 2 }}>
+      <Typography fontWeight="bold" sx={{ mb: 1, color: "#b80e0e" }}>
+        Immediate (0-30 days)
+      </Typography>
+      <TextField
+        multiline
+        minRows={4}
+        fullWidth
+        value={form.recommendedNextSteps?.immediate?.join("\n") || ""}
+        onChange={handleNextStepChange("immediate")}
+      />
+    </Box>
+  </Grid>
 
-          {/* Short-term */}
-          <Grid item xs={12} md={4}>
-            <Box sx={{ p: 2 }}>
-              <Typography fontWeight="bold" sx={{ mb: 1, color: "#cc9700" }}>
-                Short-term (1-3 months)
-              </Typography>
-              <TextField
-                multiline
-                minRows={4}
-                fullWidth
-                value={form.recommendedNextSteps?.shortTerm?.join("\n") || ""}
-                onChange={handleNextStepChange("shortTerm")}
-              />
-            </Box>
-          </Grid>
+  {/* Short-term */}
+  <Grid item xs={12}>
+    <Box sx={{ p: 2 }}>
+      <Typography fontWeight="bold" sx={{ mb: 1, color: "#cc9700" }}>
+        Short-term (1-3 months)
+      </Typography>
+      <TextField
+        multiline
+        minRows={4}
+        fullWidth
+        value={form.recommendedNextSteps?.shortTerm?.join("\n") || ""}
+        onChange={handleNextStepChange("shortTerm")}
+      />
+    </Box>
+  </Grid>
 
-          {/* Long-term */}
-          <Grid item xs={12} md={4}>
-            <Box sx={{ p: 2 }}>
-              <Typography fontWeight="bold" sx={{ mb: 1, color: "#229e83" }}>
-                Long-term (3-6 months)
-              </Typography>
-              <TextField
-                multiline
-                minRows={4}
-                fullWidth
-                value={form.recommendedNextSteps?.longTerm?.join("\n") || ""}
-                onChange={handleNextStepChange("longTerm")}
-              />
-            </Box>
-          </Grid>
-        </Grid>
+  {/* Long-term */}
+  <Grid item xs={12}>
+    <Box sx={{ p: 2 }}>
+      <Typography fontWeight="bold" sx={{ mb: 1, color: "#229e83" }}>
+        Long-term (3-6 months)
+      </Typography>
+      <TextField
+        multiline
+        minRows={4}
+        fullWidth
+        value={form.recommendedNextSteps?.longTerm?.join("\n") || ""}
+        onChange={handleNextStepChange("longTerm")}
+      />
+    </Box>
+  </Grid>
+</Grid>
+
       </Paper>
 
       {/* SAVE + CANCEL BUTTONS */}
