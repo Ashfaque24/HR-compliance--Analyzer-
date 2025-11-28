@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAdminReport, clearReport } from "../redux/features/adminReportSlice";
+import {
+  fetchAdminReport,
+  clearReport,
+} from "../redux/features/adminReportSlice";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import Summary_Repo from "../components/Summary_Repo";
 import ReportPdfGenerator from "../components/common/ReportPdfGenerator";
@@ -33,10 +36,10 @@ export default function ReportView() {
   const contentRef = useRef();
 
   // PDF-specific refs
-  const companyDetailsRef = useRef();     // company card (company, id, submitted, contact)
-  const sectionRefs = useRef([]);         // array of section DOM refs (set by Summary_Repo)
-  const executiveSummaryRef = useRef();   // executive summary block
-  const nextStepsRef = useRef();          // recommended next steps block
+  const companyDetailsRef = useRef(); // company card (company, id, submitted, contact)
+  const sectionRefs = useRef([]); // array of section DOM refs (set by Summary_Repo)
+  const executiveSummaryRef = useRef(); // executive summary block
+  const nextStepsRef = useRef(); // recommended next steps block
 
   const dropdownOptions = Object.keys(themeConfig);
   const [selectedDomain, setSelectedDomain] = useState("Default");
@@ -68,7 +71,8 @@ export default function ReportView() {
     );
 
   const details = report.details || {};
-  const currentThemeConfig = themeConfig[selectedDomain] || themeConfig["Default"];
+  const currentThemeConfig =
+    themeConfig[selectedDomain] || themeConfig["Default"];
   const submittedDate = report.submitted || "N/A";
   const contactInfo = report.contact || "N/A";
 
@@ -83,7 +87,9 @@ export default function ReportView() {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 4 }, maxWidth: 1200, mx: "auto", width: "100%" }}>
+    <Box
+      sx={{ p: { xs: 2, sm: 4 }, maxWidth: 1200, mx: "auto", width: "100%" }}
+    >
       {/* Toolbar */}
       <Box
         sx={{
@@ -135,7 +141,12 @@ export default function ReportView() {
           </Button>
         </Box>
 
-        <FormControl sx={{ minWidth: { xs: "100%", sm: 200 }, width: { xs: "100%", sm: 200 } }}>
+        <FormControl
+          sx={{
+            minWidth: { xs: "100%", sm: 200 },
+            width: { xs: "100%", sm: 200 },
+          }}
+        >
           <InputLabel id="domain-select-label">Themes</InputLabel>
           <Select
             labelId="domain-select-label"
@@ -174,7 +185,12 @@ export default function ReportView() {
           />
         )}
         {!frontCoverPresent && !backCoverPresent && (
-          <Chip label="No Cover Pages Added" color="warning" variant="outlined" size="small" />
+          <Chip
+            label="No Cover Pages Added"
+            color="warning"
+            variant="outlined"
+            size="small"
+          />
         )}
       </Stack>
 
@@ -189,36 +205,49 @@ export default function ReportView() {
       >
         {/* COMPANY DETAILS: capture this Card as one PDF block */}
         <div ref={companyDetailsRef}>
-          <Card elevation={4} sx={{ p: 3, borderRadius: 3 }}>
-            <CardContent>
-              <Typography variant="h4" fontWeight="bold" gutterBottom>
-                {report.company}
-              </Typography>
+        <Card elevation={4} sx={{ p: 2, borderRadius: 3 }}>
+  <CardContent sx={{ p: 0, pt: 1 }}>
+    
+    {/* LOGO */}
+    <Box sx={{ mb: 1 }}>
+      <img
+        src="/assets/Short Logo.png"
+        alt="logo"
+        style={{
+          width: "150px",
+          display: "block",
+        }}
+      />
+    </Box>
 
-              <Divider sx={{ my: 1 }} />
+    <Typography
+      variant="h4"
+      fontWeight="bold"
+      gutterBottom
+      sx={{ mt: 0, mb: 1 }}   // remove gap
+    >
+      {report.company}
+    </Typography>
 
-              <Stack
-                direction={{ xs: "column", sm: "row" }}
-                spacing={3}
-                alignItems={{ xs: "flex-start", sm: "center" }}
-                sx={{ mb: 1 }}
-              >
-                <Typography>
-                  <b>ID:</b> {report.id}
-                </Typography>
-                <Typography>
-                  <b>Status:</b> {report.status}
-                </Typography>
-                <Typography>
-                  <b>Submitted:</b> {submittedDate}
-                </Typography>
-              </Stack>
+    <Divider sx={{ my: 1 }} />
 
-              <Typography sx={{ mb: 1 }}>
-                <b>Contact:</b> {contactInfo}
-              </Typography>
-            </CardContent>
-          </Card>
+    <Stack
+      direction={{ xs: "column", sm: "row" }}
+      spacing={3}
+      alignItems={{ xs: "flex-start", sm: "center" }}
+      sx={{ mb: 1 }}
+    >
+      <Typography><b>ID:</b> {report.id}</Typography>
+      <Typography><b>Status:</b> {report.status}</Typography>
+      <Typography><b>Submitted:</b> {submittedDate}</Typography>
+    </Stack>
+
+    <Typography sx={{ mb: 1 }}>
+      <b>Contact:</b> {contactInfo}
+    </Typography>
+  </CardContent>
+</Card>
+
         </div>
 
         {/* PASS sectionRefs + exec + nextSteps refs to Summary_Repo */}
