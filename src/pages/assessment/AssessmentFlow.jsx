@@ -278,8 +278,7 @@
 
 
 
-
-
+// new 
 
 import React, { useEffect, useState, useMemo } from "react";
 import {
@@ -296,10 +295,11 @@ const SECTION_COLORS = [
   "#acff9142",
   "#F6F0FA",
   "#FBEFF1",
+  "#f0f7fa",
   "#FFF5EF",
   "#d3d7da38",
   "#d3d7da38",
-  "#f0f7fa"
+  
 
 ];
 export default function AssessmentFlow() {
