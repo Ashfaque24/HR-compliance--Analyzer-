@@ -142,7 +142,6 @@ export default function ReportPage() {
             ),
           }}
         />
-
       </Stack>
 
       {/* ======= TABLE ======= */}
@@ -226,6 +225,27 @@ export default function ReportPage() {
                       >
                         View
                       </Button>
+
+                      {/* NEW Assessment button */}
+                      <Button
+                        size={isSmDown ? "small" : "medium"}
+                        variant="contained"
+                        startIcon={
+                          <Icon icon="mdi:clipboard-text-outline" width={20} />
+                        }
+                        onClick={() =>
+                          navigate(
+                            `/admin/report/assessment/${row.session_uuid}`
+                          )
+                        }
+                        sx={{
+                          minWidth: 110,
+                          background: "#18a16e",
+                          textTransform: "none",
+                        }}
+                      >
+                        Assessment
+                      </Button>
                     </Stack>
                   </TableCell>
                 </TableRow>
@@ -242,7 +262,6 @@ export default function ReportPage() {
           </TableBody>
         </Table>
       </TableContainer>
-
 
       {/* ===  PREVIOUS / NEXT ALWAYS VISIBLE === */}
 

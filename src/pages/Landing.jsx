@@ -29,10 +29,10 @@ export default function Landing() {
 
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   function handleChange(e) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    // Clear error when user types
     if (errors[e.target.name]) {
       setErrors({ ...errors, [e.target.name]: "" });
     }
@@ -59,48 +59,60 @@ export default function Landing() {
       return response;
     } catch (error) {
       console.error("Failed to submit form:", error);
+
+      // requestWrapper returns { status, data, message }
+      const backendMessage =
+        error?.data?.message || // e.g. "Submission limit reached for email (2 max)."
+        error?.message ||
+        "Failed to submit form. Please try again.";
+
+      setApiError(backendMessage);
       throw error;
     }
   };
 
   async function handleSubmit(e) {
     e.preventDefault();
-  
-    // Reset errors
+    setApiError("");
     setErrors({ fullName: "", phone: "" });
-  
-    // Validation
+
     let valid = true;
-  
-    // Name validation: at least 3 letters, no numbers
     const nameValue = formData.fullName.trim();
     if (nameValue.length < 3) {
-      setErrors((prev) => ({ ...prev, fullName: "Name must be at least 3 letters." }));
+      setErrors((prev) => ({
+        ...prev,
+        fullName: "Name must be at least 3 letters.",
+      }));
       valid = false;
     } else if (/\d/.test(nameValue)) {
-      setErrors((prev) => ({ ...prev, fullName: "Name cannot contain numbers." }));
+      setErrors((prev) => ({
+        ...prev,
+        fullName: "Name cannot contain numbers.",
+      }));
       valid = false;
     }
-  
-    // Phone validation: exactly 10 digits
+
     if (!/^\d{10}$/.test(formData.phone.trim())) {
-      setErrors((prev) => ({ ...prev, phone: "Phone number must be exactly 10 digits." }));
+      setErrors((prev) => ({
+        ...prev,
+        phone: "Phone number must be exactly 10 digits.",
+      }));
       valid = false;
     }
-  
+
     if (!valid) return;
-  
+
     setSubmitting(true);
     try {
       await handleApiSubmit();
       navigate("/assessment", { state: formData });
     } catch {
-      alert("Failed to submit form. Please try again.");
+      // error message already set in handleApiSubmit
     } finally {
       setSubmitting(false);
     }
   }
-  
+
   return (
     <Box
       sx={{
@@ -149,7 +161,6 @@ export default function Landing() {
           direction="column"
           alignItems="flex-start"
         >
-          {/* Feature 1 */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Paper
               elevation={3}
@@ -170,7 +181,6 @@ export default function Landing() {
             </Box>
           </Box>
 
-          {/* Feature 2 */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Paper
               elevation={3}
@@ -191,7 +201,6 @@ export default function Landing() {
             </Box>
           </Box>
 
-          {/* Feature 3 */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Paper
               elevation={3}
@@ -244,7 +253,9 @@ export default function Landing() {
             Start Your Assessment
           </Typography>
 
-          <Typography>Enter your details to begin the compliance evaluation</Typography>
+          <Typography>
+            Enter your details to begin the compliance evaluation
+          </Typography>
 
           <TextField
             label="Full Name *"
@@ -292,6 +303,12 @@ export default function Landing() {
             fullWidth
           />
 
+          {apiError && (
+            <Typography color="error" variant="body2">
+              {apiError}
+            </Typography>
+          )}
+
           <Button
             type="submit"
             variant="contained"
@@ -303,7 +320,8 @@ export default function Landing() {
           </Button>
 
           <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-            Your information is secure and will only be used for generating your compliance report.
+            Your information is secure and will only be used for generating your
+            compliance report.
           </Typography>
         </Box>
       </Box>

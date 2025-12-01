@@ -8,9 +8,9 @@ import adminReportReducer from "./features/adminReportSlice";
 import reportInfoReducer from "./features/reportInfoSlice";
 import editReportReducer from "./features/editReportSlice";
 import bulkUploadReducer from "./features/bulkUploadSlice";
-import coverPageReducer from "./features/coverPageSlice";  
+import coverPageReducer from "./features/coverPageSlice";
 import userReportReducer from "./features/userReportSlice";
-
+import adminAssessmentReviewReducer from "./features/adminAssessmentReviewSlice"; // Import the new slice
 
 const store = configureStore({
   reducer: {
@@ -25,6 +25,7 @@ const store = configureStore({
     bulkUpload: bulkUploadReducer,
     coverPage: coverPageReducer,
     userReport: userReportReducer,
+    adminAssessmentReview: adminAssessmentReviewReducer, 
   },
 });
 

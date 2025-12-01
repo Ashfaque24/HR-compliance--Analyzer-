@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "../pages/Landing";
@@ -8,9 +7,10 @@ import ProtectedRoute from "./ProtectedRoute";
 import Navbar from "../sections/landing/Navbar";
 import AssessmentFlow from "../pages/assessment/AssessmentFlow";
 import AssessmentSummary from "../pages/assessment/AssessmentSummary";
-import ReportPage from "../pages/ReportPage";  
+import ReportPage from "../pages/ReportPage";
 import ReportView from "../pages/ReportView";
 import EditReportPage from "../pages/EditReportPage";
+import AdminAssessmentReview from "../pages/AdminAssessmentReview";
 
 export default function AppRouter() {
   return (
@@ -56,8 +56,14 @@ export default function AppRouter() {
           }
         />
 
-
-
+        <Route
+          path="/admin/report/assessment/:id"
+          element={
+            <ProtectedRoute>
+              <AdminAssessmentReview />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
