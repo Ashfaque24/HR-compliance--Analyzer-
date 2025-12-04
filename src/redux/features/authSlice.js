@@ -9,7 +9,7 @@ export const loginUser = createAsyncThunk("auth/loginUser", async (postData) => 
    url:"admin/auth/login",
    data:postData
   });
-  console.log("second",res);
+
   
   return res
 });

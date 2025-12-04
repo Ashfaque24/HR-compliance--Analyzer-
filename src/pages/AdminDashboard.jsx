@@ -179,7 +179,7 @@ export default function AdminDashboard() {
           </Button>
 
           <BulkUpload
-            onFileSelected={(json) => console.log("Excel JSON:", json)}
+            // onFileSelected={(json) => console.log("Excel JSON:", json)}
             exampleFileUrl="/assets/Compliance_Questions (1).xlsx"
           />
 

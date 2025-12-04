@@ -15,14 +15,20 @@ export const fetchAllSubmissions = createAsyncThunk(
         params.search = search.trim();
       }
 
+      
+
       const response = await requestWrapper({
         method: "GET",
         url: "user/response/all-submissions",
         params,
       });
       
-      return response.data || response;
+      
+      
+      // Return the entire response as it contains all needed data
+      return response;
     } catch (error) {
+
       return rejectWithValue(error.data || error.message || "Network error");
     }
   }
@@ -53,6 +59,9 @@ const reportInfoSlice = createSlice({
         totalPages: 0,
       };
     },
+    setCurrentPage(state, action) {
+      state.pagination.page = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -62,27 +71,34 @@ const reportInfoSlice = createSlice({
       })
       .addCase(fetchAllSubmissions.fulfilled, (state, action) => {
         state.loading = false;
-        // Handle the response structure with 'data' property
-        state.submissions = Array.isArray(action.payload.data)
-          ? action.payload.data
-          : Array.isArray(action.payload)
-          ? action.payload
+        
+
+        
+        // The API returns: { page, pageSize, total, totalPages, data: [...], meta: {...} }
+        const response = action.payload;
+
+        // Update submissions from the 'data' array
+        state.submissions = Array.isArray(response.data)
+          ? response.data
           : [];
         
-        // Update pagination info
+        // Update pagination info - API returns it at root level AND in meta
         state.pagination = {
-          page: action.payload.page || 1,
-          pageSize: action.payload.pageSize || 20,
-          total: action.payload.total || 0,
-          totalPages: action.payload.totalPages || 0,
+          page: response.page || response.meta?.currentPage || 1,
+          pageSize: response.pageSize || 20,
+          total: response.total || response.meta?.totalRecords || 0,
+          totalPages: response.totalPages || response.meta?.totalPages || 0,
         };
+        
+
       })
       .addCase(fetchAllSubmissions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.submissions = [];
       });
   },
 });
 
-export const { clearReportInfo } = reportInfoSlice.actions;
+export const { clearReportInfo, setCurrentPage } = reportInfoSlice.actions;
 export default reportInfoSlice.reducer;

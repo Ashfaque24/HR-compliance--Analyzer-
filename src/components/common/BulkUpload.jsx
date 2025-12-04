@@ -92,7 +92,7 @@ export default function BulkUpload() {
           return;
         }
 
-        console.log("📦 Upload payload:", uploadPayload);
+
 
         // Dispatch async thunk
         dispatch(bulkUploadQuestions(uploadPayload))

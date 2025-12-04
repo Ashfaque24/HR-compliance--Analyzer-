@@ -27,7 +27,7 @@ export const getImageUrl = (relativeUrl) => {
   //   baseUrl = process.env.REACT_APP_API_BASE_URL;
   // }
   
-  console.log("imge baseURL");
+
   
   return `${baseUrl}${relativeUrl.startsWith("/") ? "" : "/"}${relativeUrl}`;
 };

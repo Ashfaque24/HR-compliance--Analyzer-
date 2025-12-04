@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -36,40 +36,80 @@ export default function ReportPage() {
   );
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [page, setPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
+  // Safely get totalPages for component use
+  const totalPages = pagination?.totalPages || 1;
+
+  // Debounce search query
   useEffect(() => {
-    const delay = setTimeout(() => {
-      dispatch(
-        fetchAllSubmissions({
-          page,
-          pageSize: 20,
-          search: searchQuery,
-        })
-      );
+    const timer = setTimeout(() => {
+      // Only update if search actually changed
+      if (searchQuery !== debouncedSearch) {
+        setDebouncedSearch(searchQuery);
+        setCurrentPage(1); // Reset to page 1 when search changes
+      }
     }, 500);
 
-    return () => clearTimeout(delay);
-  }, [dispatch, page, searchQuery]);
+    return () => clearTimeout(timer);
+  }, [searchQuery, debouncedSearch]);
+
+  // Fetch data when page or debouncedSearch changes
+  useEffect(() => {
+
+    
+    dispatch(
+      fetchAllSubmissions({
+        page: currentPage,
+        pageSize: 20,
+        search: debouncedSearch,
+      })
+    );
+  }, [dispatch, currentPage, debouncedSearch]);
 
   const handlePageChange = (event, value) => {
-    setPage(value);
+
+    setCurrentPage(value);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
-    setPage(1);
   };
 
-  if (loading) return <LoadingSpinner message="Loading reports..." />;
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
-  if (error)
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  if (loading && submissions.length === 0) {
+    return <LoadingSpinner message="Loading reports..." />;
+  }
+
+  if (error && submissions.length === 0) {
     return (
       <Box sx={{ p: 5, textAlign: "center" }}>
         <Typography color="error">{error}</Typography>
+        <Button
+          variant="contained"
+          onClick={() => dispatch(fetchAllSubmissions({ page: 1, pageSize: 20, search: "" }))}
+          sx={{ mt: 2, background: "#18a16e" }}
+        >
+          Retry
+        </Button>
       </Box>
     );
+  }
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "-";
@@ -144,6 +184,13 @@ export default function ReportPage() {
         />
       </Stack>
 
+      {/* Loading Overlay */}
+      {loading && (
+        <Box sx={{ textAlign: "center", py: 2 }}>
+          <Typography color="primary">Loading...</Typography>
+        </Box>
+      )}
+
       {/* ======= TABLE ======= */}
       <TableContainer
         component={Paper}
@@ -151,6 +198,8 @@ export default function ReportPage() {
           borderRadius: 2,
           overflowX: "auto",
           boxShadow: "0px 2px 8px rgba(0,0,0,0.05)",
+          opacity: loading ? 0.6 : 1,
+          transition: "opacity 0.3s",
         }}
       >
         <Table sx={{ minWidth: 900 }}>
@@ -226,7 +275,6 @@ export default function ReportPage() {
                         View
                       </Button>
 
-                      {/* NEW Assessment button */}
                       <Button
                         size={isSmDown ? "small" : "medium"}
                         variant="contained"
@@ -263,8 +311,7 @@ export default function ReportPage() {
         </Table>
       </TableContainer>
 
-      {/* ===  PREVIOUS / NEXT ALWAYS VISIBLE === */}
-
+      {/* ===  PREVIOUS / NEXT BUTTONS === */}
       <Box
         sx={{
           display: "flex",
@@ -276,22 +323,32 @@ export default function ReportPage() {
       >
         <Button
           variant="contained"
-          disabled={page <= 1}
-          onClick={() => setPage((prev) => prev - 1)}
-          sx={{ background: "#18a16e" }}
+          disabled={currentPage <= 1 || loading}
+          onClick={handlePreviousPage}
+          sx={{ 
+            background: "#18a16e",
+            "&:disabled": {
+              background: "#ccc",
+            }
+          }}
         >
           Previous
         </Button>
 
         <Typography>
-          Page {page} of {pagination.totalPages || 1}
+          Page {currentPage} of {totalPages}
         </Typography>
 
         <Button
           variant="contained"
-          disabled={page >= (pagination.totalPages || 1)}
-          onClick={() => setPage((prev) => prev + 1)}
-          sx={{ background: "#18a16e" }}
+          disabled={currentPage >= totalPages || loading}
+          onClick={handleNextPage}
+          sx={{ 
+            background: "#18a16e",
+            "&:disabled": {
+              background: "#ccc",
+            }
+          }}
         >
           Next
         </Button>
@@ -300,12 +357,13 @@ export default function ReportPage() {
       {/* ======= PAGINATION ======= */}
       <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
         <Pagination
-          count={pagination.totalPages || 1}
-          page={page}
+          count={totalPages}
+          page={currentPage}
           onChange={handlePageChange}
           color="primary"
           showFirstButton
           showLastButton
+          disabled={loading}
           sx={{
             "& .MuiPaginationItem-root.Mui-selected": {
               backgroundColor: "#18a16e",

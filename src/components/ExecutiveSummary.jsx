@@ -1,8 +1,6 @@
-// code after setting correct icon for all sections 
-
 import React from "react";
 import { Box, Typography, Paper, Divider, Chip } from "@mui/material";
-import { blue, red, grey } from "@mui/material/colors";
+import { blue, red, orange, yellow, green, grey } from "@mui/material/colors";
 import { DefaultScoreBlock } from "./ExecutiveGraphs/DefaultScoreBlock";
 import { CircularScoreBlock } from "./ExecutiveGraphs/CircularScoreBlock";
 import { GaugeScoreBlock } from "./ExecutiveGraphs/GaugeScoreBlock";
@@ -16,29 +14,53 @@ const reportFont = "Helvetica, Arial, sans-serif";
 
 function getRiskLevel(score, max) {
   const pct = (score / max) * 100;
-  if (pct < 40)
+
+  if (pct < 40) {
     return {
-      text: "High Risk – Immediate Attention Required",
+      text: "Unfit & Vulnerable – Critical Risk",
       color: red[600],
       bgColor: red[50],
       borderColor: red[300],
-      icon: "✕",
+      healthStatus: "Unfit & Vulnerable",
+      riskLevel: "Critical Risk",
     };
-  if (pct < 70)
+  } else if (pct < 60) {
     return {
-      text: "Medium Risk – Action Needed",
-      color: red[600],
-      bgColor: red[50],
-      borderColor: red[300],
-      icon: "!",
+      text: "Out of Shape – High-Medium Risk",
+      color: orange[600],
+      bgColor: orange[50],
+      borderColor: orange[300],
+      healthStatus: "Out of Shape",
+      riskLevel: "High-Medium Risk",
     };
-  return {
-    text: "Low Risk – Good Standing",
-    color: red[600],
-    bgColor: red[50],
-    borderColor: red[300],
-    icon: "✓",
-  };
+  } else if (pct < 75) {
+    return {
+      text: "Active & Improving – Medium Risk",
+      color: yellow[600],
+      bgColor: yellow[50],
+      borderColor: yellow[300],
+      healthStatus: "Active & Improving",
+      riskLevel: "Medium Risk",
+    };
+  } else if (pct < 90) {
+    return {
+      text: "Healthy & Fit – Low Risk",
+      color: green[600],
+      bgColor: green[50],
+      borderColor: green[300],
+      healthStatus: "Healthy & Fit",
+      riskLevel: "Low Risk",
+    };
+  } else {
+    return {
+      text: "Solid & Elite – No Risk (Protective)",
+      color: blue[600],
+      bgColor: blue[50],
+      borderColor: blue[300],
+      healthStatus: "Solid & Elite",
+      riskLevel: "No Risk (Protective)",
+    };
+  }
 }
 
 function renderScoreBlock(score, maxScore, type) {
@@ -67,8 +89,6 @@ function renderScoreBlock(score, maxScore, type) {
 export function ExecutiveSummary({ data, themeConfig }) {
   const { sectionRatings = [], overAllScore, maxmScore, keyInsights = [] } = data;
   const risk = getRiskLevel(overAllScore, maxmScore);
-
-  // Get iconsArray from themeConfig, default to empty array if not provided
   const iconsArray = themeConfig?.iconsArray ?? [];
 
   return (
@@ -107,20 +127,6 @@ export function ExecutiveSummary({ data, themeConfig }) {
             textAlign: "center",
           }}
         >
-          <Box
-            sx={{
-              width: 26,
-              height: 26,
-              borderRadius: "50%",
-              border: `2px solid ${risk.color}`,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              fontWeight: 700,
-            }}
-          >
-            {risk.icon}
-          </Box>
           <Typography
             sx={{ fontWeight: 600, color: risk.color, fontSize: { xs: 14, sm: 16 } }}
           >
@@ -146,8 +152,6 @@ export function ExecutiveSummary({ data, themeConfig }) {
         {sectionRatings.map((sec, idx) => {
           const max = sec.maxScore ?? sec.mxmScore ?? "?";
           const percentage = max !== "?" ? (sec.score / max) * 100 : 0;
-
-          // Assign icon from theme iconsArray if available, else default to 📊
           const icon = idx < iconsArray.length ? iconsArray[idx] : "📊";
 
           return (
