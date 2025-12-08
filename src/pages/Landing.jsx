@@ -144,12 +144,11 @@ export default function Landing() {
 
         <Typography
           sx={{
-            maxWidth: { xs: "100%", md: 400 },
+            maxWidth: { xs: "100%", md: 700 },
             m: { xs: "auto", md: "unset" },
           }}
         >
-          Our AI-powered analysis evaluates your organization across 5 critical
-          compliance areas and provides actionable recommendations.
+          Answer a few simple questions to receive an instant diagnostic score and recommendations.
         </Typography>
 
         <Stack
@@ -320,8 +319,8 @@ export default function Landing() {
           </Button>
 
           <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-            Your information is secure and will only be used for generating your
-            compliance report.
+          We Value your Privacy, informations shared will be only used for Report purposes, we won’t spam you with calls or messages, 
+          we will connect only if you want detailed report.
           </Typography>
         </Box>
       </Box>
