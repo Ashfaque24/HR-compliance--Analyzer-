@@ -61,8 +61,7 @@ const Navbar = ({ hideMenu = false }) => {
           flexWrap: "nowrap",
           minWidth: 0,
           px: { xs: 1, sm: 2 },
-          minHeight: { xs: 80, sm: 80 },
-          maxHeight: { xs: 80, sm: 90 },
+          height:80
         }}
       >
         {/* Logo and Title */}
@@ -107,7 +106,7 @@ const Navbar = ({ hideMenu = false }) => {
                 fontWeight="bold"
                 color="inherit"
                 noWrap
-                sx={{ fontSize: { xs: 15, sm: 20 } }}
+                sx={{ fontSize: { xs: 14, sm: 16 } }}
               >
                 HR Compliance Health Checker
               </Typography>

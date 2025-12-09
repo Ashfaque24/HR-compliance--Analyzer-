@@ -118,25 +118,34 @@ export default function Landing() {
       sx={{
         display: "flex",
         flexDirection: { xs: "column", md: "row" },
-        minHeight: "100vh",
+        // maxHeight: "100%",
         fontFamily: "Helvetica, Arial, sans-serif",
         width: "100%",
+        overflow:{xs:'auto', md:'hidden'},
+        height:{lg:"calc(100vh - 112px)", md:'100%'}
       }}
     >
       {/* Left information panel */}
       <Box
-        sx={{
-          flex: 1,
-          bgcolor: "primary.dark",
-          color: "white",
-          p: { xs: 4, md: 8 },
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          gap: 3,
-          background: "linear-gradient(135deg, #1e3a8a, #2563eb)",
-          textAlign: { xs: "center", md: "left" },
-        }}
+sx={{
+  flex: 1,
+  bgcolor: "primary.dark",
+  color: "white",
+  p: { xs: 3, sm: 4, md: 8 },
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: { xs: "flex-start", sm: "center" },
+  gap: { xs: 2, sm: 3 },
+  background: "linear-gradient(135deg, #1e3a8a, #2563eb)",
+  textAlign: { xs: "center", md: "left" },
+
+  // Height handling (mobile → auto, desktop → full height)
+  minHeight: { xs: "auto", sm: "auto", md: "86vh" },
+
+  // Better spacing on small phones
+  pt: { xs: 6, sm: 8, md: 0 },
+}}
+
       >
         <Typography variant="h4" fontWeight="bold">
           Get Your HR Compliance Score in Minutes
@@ -231,6 +240,7 @@ export default function Landing() {
           justifyContent: "center",
           alignItems: "center",
           bgcolor: "background.paper",
+          
         }}
       >
         <Box
