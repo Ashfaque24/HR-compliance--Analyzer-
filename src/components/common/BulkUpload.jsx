@@ -302,11 +302,10 @@ export default function BulkUpload() {
         const ws = wb.Sheets[wsname];
         const jsonData = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
-        console.log("📊 Raw Excel Data:", jsonData);
+        
 
         const uploadPayload = groupRows(jsonData);
 
-        console.log("📦 Grouped Payload:", uploadPayload);
 
         if (!uploadPayload.length) {
           alert("⚠️ No valid data found in the uploaded file!");
