@@ -147,7 +147,9 @@ sx={{
 }}
 
       >
-        <Typography variant="h4" fontWeight="bold">
+        <Typography sx={{
+          fontSize: { xs: "1.5rem", md: "2rem"}
+        }} fontWeight="bold">
           Get Your HR Compliance Score in Minutes
         </Typography>
 
