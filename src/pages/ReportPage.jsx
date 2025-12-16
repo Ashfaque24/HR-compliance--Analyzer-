@@ -57,8 +57,6 @@ export default function ReportPage() {
 
   // Fetch data when page or debouncedSearch changes
   useEffect(() => {
-
-    
     dispatch(
       fetchAllSubmissions({
         page: currentPage,
@@ -69,7 +67,6 @@ export default function ReportPage() {
   }, [dispatch, currentPage, debouncedSearch]);
 
   const handlePageChange = (event, value) => {
-
     setCurrentPage(value);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -102,7 +99,9 @@ export default function ReportPage() {
         <Typography color="error">{error}</Typography>
         <Button
           variant="contained"
-          onClick={() => dispatch(fetchAllSubmissions({ page: 1, pageSize: 20, search: "" }))}
+          onClick={() =>
+            dispatch(fetchAllSubmissions({ page: 1, pageSize: 20, search: "" }))
+          }
           sx={{ mt: 2, background: "#18a16e" }}
         >
           Retry
@@ -146,13 +145,6 @@ export default function ReportPage() {
       >
         Back to Dashboard
       </Button>
-
-      <Typography
-        mb={4}
-        sx={{ fontSize: isSmDown ? "0.9rem" : "1rem", opacity: 0.8 }}
-      >
-        Review, enhance, and manage HR compliance assessment reports.
-      </Typography>
 
       {/* ======= FILTERS ======= */}
       <Stack
@@ -235,10 +227,9 @@ export default function ReportPage() {
                   <TableCell>{formatDate(row.submitted_at)}</TableCell>
                   <TableCell>{formatDate(row.started_at)}</TableCell>
                   <TableCell>{row.isEnquired ? "Yes" : "No"}</TableCell>
-
                   <TableCell>
                     <Stack
-                      direction={isSmDown ? "column" : "row"}
+                      direction={{ xs: "row", sm: "row" }}
                       spacing={1}
                       alignItems="center"
                       justifyContent={isSmDown ? "center" : "flex-start"}
@@ -325,11 +316,11 @@ export default function ReportPage() {
           variant="contained"
           disabled={currentPage <= 1 || loading}
           onClick={handlePreviousPage}
-          sx={{ 
+          sx={{
             background: "#18a16e",
             "&:disabled": {
               background: "#ccc",
-            }
+            },
           }}
         >
           Previous
@@ -343,11 +334,11 @@ export default function ReportPage() {
           variant="contained"
           disabled={currentPage >= totalPages || loading}
           onClick={handleNextPage}
-          sx={{ 
+          sx={{
             background: "#18a16e",
             "&:disabled": {
               background: "#ccc",
-            }
+            },
           }}
         >
           Next

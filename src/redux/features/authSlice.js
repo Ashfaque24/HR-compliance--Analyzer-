@@ -3,12 +3,12 @@ import requestWrapper from "../../api/axiosInstance";
 
 
 
-export const loginUser = createAsyncThunk("auth/loginUser", async (postData) => {
+export const loginUser = createAsyncThunk("auth/loginUser", async (postData,thunkAPI) => {
   const res = await requestWrapper({
    method : "POST",
    url:"admin/auth/login",
    data:postData
-  });
+  },thunkAPI.rejectWithValue);
 
   
   return res
@@ -53,6 +53,8 @@ const authSlice = createSlice({
         localStorage.setItem("token", action.payload.token);
       })
       .addCase(loginUser.rejected, (state, action) => {
+  
+        
         state.loading = false;
         state.error = action.payload || "Login error";
         state.isAuthenticated = false;

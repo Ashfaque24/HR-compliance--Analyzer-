@@ -66,7 +66,7 @@ axios.interceptors.response.use(
   }
 );
 
-const requestWrapper = async (options) => {
+const requestWrapper = async (options,reject) => {
   try {
     let headers = options?.headers || { "Content-Type": "application/json" };
 
@@ -83,6 +83,11 @@ const requestWrapper = async (options) => {
     console.error("❌ RequestWrapper failed:", error);
     if (error.response) {
       console.error("Server responded with:", error.response.status, error.response.data);
+      if(reject){
+
+        
+        return reject(error.response.data.message);
+      }
       throw {
         status: error.response.status,
         data: error.response.data,

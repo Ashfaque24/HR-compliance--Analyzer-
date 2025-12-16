@@ -27,7 +27,7 @@
 //     (state) => state.bulkUpload || {}
 //   );
 
-//   //  Path to example Excel file (inside public/assets)
+//   // Path to example Excel file (inside public/assets)
 //   const exampleFileUrl = "/assets/Compliance_Questions.xlsx";
 
 //   // Trigger hidden file input
@@ -38,38 +38,48 @@
 //   };
 
 //   /**
-//    *  Group Excel rows by Section & Question
-//    * Also maps Options + Scores into [{ name, score }]
+//    * Group Excel rows by Section, then by Question
+//    * Creates structure: sections array, each with questions array
 //    */
 //   const groupRows = (rows) => {
-//     const grouped = {};
+//     const sectionMap = {};
 
 //     rows.forEach((row) => {
 //       const section = row.Section?.trim();
 //       const question = row.Question?.trim();
-//       if (!section || !question) return;
+//       const option = row.Option?.trim();
+//       const score = Number(row.Score) || 0;
 
-//       const key = `${section}|${question}`;
+//       if (!section || !question || !option) return;
 
-//       if (!grouped[key]) {
-//         grouped[key] = {
+//       // Create section if it doesn't exist
+//       if (!sectionMap[section]) {
+//         sectionMap[section] = {
 //           section,
-//           question,
-//           options: [],
+//           questions: [],
 //         };
 //       }
 
-//       const opts = row.Options ? row.Options.split(",").map((o) => o.trim()) : [];
-//       const singleScore = Number(row.Score) || 0; // single score value
+//       // Find or create question in this section
+//       let questionObj = sectionMap[section].questions.find(
+//         (q) => q.question === question
+//       );
 
-//       opts.forEach((name) => {
-//         if (!grouped[key].options.some((o) => o.name === name)) {
-//           grouped[key].options.push({ name, score: singleScore });
-//         }
-//       });
+//       if (!questionObj) {
+//         questionObj = {
+//           question,
+//           options: [],
+//         };
+//         sectionMap[section].questions.push(questionObj);
+//       }
+
+//       // Add option with score (avoid duplicates)
+//       if (!questionObj.options.some((o) => o.name === option)) {
+//         questionObj.options.push({ name: option, score });
+//       }
 //     });
 
-//     return Object.values(grouped);
+//     return Object.values(sectionMap);
 //   };
 
 //   // Handle Excel file upload
@@ -84,7 +94,10 @@
 //         const ws = wb.Sheets[wsname];
 //         const jsonData = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
+        
+
 //         const uploadPayload = groupRows(jsonData);
+
 
 //         if (!uploadPayload.length) {
 //           alert("⚠️ No valid data found in the uploaded file!");
@@ -95,7 +108,7 @@
 //         dispatch(bulkUploadQuestions(uploadPayload))
 //           .unwrap()
 //           .then(() => {
-//             alert(" Bulk upload successful!");
+//             alert("✅ Bulk upload successful!");
 //             setOpen(false);
 //           })
 //           .catch((err) => {
@@ -122,7 +135,7 @@
 //         color="primary"
 //         startIcon={<File />}
 //         onClick={() => setOpen(true)}
-//         sx={{background: "#18a16e" }}
+//         sx={{ background: "#18a16e" }}
 //       >
 //         Bulk Upload
 //       </Button>
@@ -134,15 +147,14 @@
 //         <DialogContent>
 //           <Box sx={{ mb: 2 }}>
 //             <Typography variant="body2" color="text.secondary">
-//               Upload your survey data in Excel format.
+//               :- The file must contain four columns: Section, Question, Option,
+//               Score following the same structure as the example sheet.
 //               <br />
-//               Each row should have <b>Section</b>, <b>Question</b>, and{" "}
-//               <b>Options</b> (comma-separated).
+//               :- If a Section already exists, do not upload it as a new row.
+//               Instead, add the new questions under the same Section so that
+//               duplicate Sections are not created.
 //               <br />
-//               Optionally, you can add a <b>Scores</b> column to assign points per
-//               option.
-//               <br />
-//               Refer to the example file below.
+//               :- Please format your data exactly like the example provided.
 //             </Typography>
 //           </Box>
 
@@ -153,7 +165,7 @@
 //               startIcon={<UploadCloud />}
 //               onClick={handleUploadClick}
 //               disabled={loading}
-//               sx={{background:"#18a16e"}}
+//               sx={{ background: "#18a16e" }}
 //             >
 //               {loading ? (
 //                 <CircularProgress size={22} color="inherit" />
@@ -177,7 +189,7 @@
 //               component="a"
 //               href={exampleFileUrl}
 //               download="Example_Compliance_Questions.xlsx"
-//               sx={{ ml: 2, backgroundColor:"#18a16e" }}
+//               sx={{ ml: 2, backgroundColor: "#18a16e" }}
 //             >
 //               Download Example
 //             </Button>
@@ -186,7 +198,7 @@
 //           {/* Status Messages */}
 //           {success && (
 //             <Typography mt={2} color="success.main">
-//                Uploaded successfully!
+//               ✅ Uploaded successfully!
 //             </Typography>
 //           )}
 //           {error && (
@@ -209,6 +221,12 @@
 
 
 
+
+
+
+
+
+// BulkUpload.js
 import React, { useState, useRef } from "react";
 import {
   Button,
@@ -220,6 +238,8 @@ import {
   Stack,
   Box,
   CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { File, UploadCloud } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -229,7 +249,8 @@ import {
   resetBulkUpload,
 } from "../../redux/features/bulkUploadSlice";
 
-export default function BulkUpload() {
+// ✅ Accept an optional onSuccess prop from parent
+export default function BulkUpload({ onSuccess }) {
   const [open, setOpen] = useState(false);
   const fileInputRef = useRef();
   const dispatch = useDispatch();
@@ -237,6 +258,18 @@ export default function BulkUpload() {
   const { loading, success, error } = useSelector(
     (state) => state.bulkUpload || {}
   );
+
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") return;
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
 
   // Path to example Excel file (inside public/assets)
   const exampleFileUrl = "/assets/Compliance_Questions.xlsx";
@@ -305,13 +338,14 @@ export default function BulkUpload() {
         const ws = wb.Sheets[wsname];
         const jsonData = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
-        
-
         const uploadPayload = groupRows(jsonData);
 
-
         if (!uploadPayload.length) {
-          alert("⚠️ No valid data found in the uploaded file!");
+          setSnackbar({
+            open: true,
+            message: "No valid data found in the uploaded file!",
+            severity: "warning",
+          });
           return;
         }
 
@@ -319,14 +353,25 @@ export default function BulkUpload() {
         dispatch(bulkUploadQuestions(uploadPayload))
           .unwrap()
           .then(() => {
-            alert("✅ Bulk upload successful!");
+            setSnackbar({
+              open: true,
+              message: "Bulk upload successful!",
+              severity: "success",
+            });
             setOpen(false);
+
+            // ✅ Notify parent to refresh sections
+            if (typeof onSuccess === "function") {
+              onSuccess();
+            }
           })
           .catch((err) => {
             console.error("❌ Upload failed:", err);
-            alert(
-              "Upload failed. Please check your Excel format or console for details."
-            );
+            setSnackbar({
+              open: true,
+              message: "Upload failed. Please check your Excel format ",
+              severity: "error",
+            });
           });
       };
       reader.readAsBinaryString(file);
@@ -407,11 +452,6 @@ export default function BulkUpload() {
           </Stack>
 
           {/* Status Messages */}
-          {success && (
-            <Typography mt={2} color="success.main">
-              ✅ Uploaded successfully!
-            </Typography>
-          )}
           {error && (
             <Typography mt={2} color="error.main">
               ❌ Upload failed: {error}
@@ -425,6 +465,22 @@ export default function BulkUpload() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

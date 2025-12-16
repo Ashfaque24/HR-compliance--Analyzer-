@@ -50,6 +50,9 @@ export default function CoverImageUploader({
     newBackFilename,
   } = useSelector((state) => state.coverPage);
 
+
+  
+
   // Local state to hold newly selected files before upload
   const [frontFile, setFrontFile] = useState(null);
   const [backFile, setBackFile] = useState(null);
@@ -67,6 +70,9 @@ export default function CoverImageUploader({
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   // On mount or session_uuid change, fetch existing images and reset status
+
+
+  
   useEffect(() => {
     if (session_uuid) {
       dispatch(fetchExistingCoverImages(session_uuid));
@@ -76,6 +82,8 @@ export default function CoverImageUploader({
 
   // On successful upload, reset local file state, update parent images,
   // and refresh existing images from server
+
+  
   useEffect(() => {
     if (saveSuccess) {
       setFrontFile(null);
@@ -99,10 +107,14 @@ export default function CoverImageUploader({
   useEffect(() => {
     if (frontFile) {
       const url = URL.createObjectURL(frontFile);
+      
       setFrontImageUrl(url);
       return () => URL.revokeObjectURL(url);
     } else if (frontImage) {
+    
       const selected = existingFrontImages.find((img) => img.filename === frontImage);
+      console.log(selected);
+      
       setFrontImageUrl(selected ? getImageUrl(selected.url) : "");
     } else {
       setFrontImageUrl("");

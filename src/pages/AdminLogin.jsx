@@ -35,8 +35,8 @@ export default function AdminLogin() {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "#f5f7fa" }}>
-      <Paper elevation={5} sx={{ px: 4, py: 5, borderRadius: 3, maxWidth: 360, width: "100%", textAlign: "center" }}>
+    <Box sx={{ minHeight: "100%", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "#f5f7fa" }}>
+      <Paper elevation={5} sx={{ px: 4, py: 5, borderRadius: 3, maxWidth: 360, width: "100%", textAlign: "center", marginTop: { xs: 3, md: 7 } }}>
         <Box sx={{ mb: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <ShieldIcon sx={{ fontSize: 40, bgcolor: "#232b3b", color: "#fff", borderRadius: "50%", p: 1, mb: 1 }} />
         </Box>

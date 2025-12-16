@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -179,9 +178,11 @@ export default function AdminDashboard() {
           </Button>
 
           <BulkUpload
-            // onFileSelected={(json) => console.log("Excel JSON:", json)}
-            exampleFileUrl="/assets/Compliance_Questions (1).xlsx"
-          />
+  onSuccess={() => {
+    // ✅ Re-fetch sections after a successful bulk upload
+    dispatch(fetchSectionsWithQuestionCount());
+  }}
+/>
 
           <Button
             variant="contained"
@@ -273,7 +274,7 @@ export default function AdminDashboard() {
                         setShowEditSectionModal(true);
                       }}
                     >
-                      <Edit3 size={18} color="#4385f5"/>
+                      <Edit3 size={18} color="#4385f5" />
                     </IconButton>
 
                     <IconButton
@@ -330,9 +331,7 @@ export default function AdminDashboard() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowAddSectionModal(false)}>
-            Cancel
-          </Button>
+          <Button onClick={() => setShowAddSectionModal(false)}>Cancel</Button>
           <Button
             variant="contained"
             startIcon={<Save />}
@@ -367,9 +366,7 @@ export default function AdminDashboard() {
             variant="contained"
             sx={{ background: "#18a16e" }}
             disabled={editingSection}
-            startIcon={
-              editingSection ? <LoadingSpinner size={20} /> : <Save />
-            }
+            startIcon={editingSection ? <LoadingSpinner size={20} /> : <Save />}
             onClick={handleEditSection}
           >
             Update
@@ -379,4 +376,3 @@ export default function AdminDashboard() {
     </Box>
   );
 }
-

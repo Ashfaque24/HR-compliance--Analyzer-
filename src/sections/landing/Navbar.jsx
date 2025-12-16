@@ -47,7 +47,7 @@ const Navbar = ({ hideMenu = false }) => {
 
   return (
     <AppBar
-      position="static"
+      position="sticky"
       sx={{
         backgroundColor: "#18a16e",
         color: "white",
@@ -61,7 +61,7 @@ const Navbar = ({ hideMenu = false }) => {
           flexWrap: "nowrap",
           minWidth: 0,
           px: { xs: 1, sm: 2 },
-          height:80
+          height:40,
         }}
       >
         {/* Logo and Title */}
@@ -90,6 +90,7 @@ const Navbar = ({ hideMenu = false }) => {
                 component="img"
                 src="/assets/42-white-border.png"
                 alt="logo"
+                paddingTop={ 0.5 }
                 sx={{
                   width: { xs: 80, sm: 110 },
                   height: { xs: 50, sm: 70 },
@@ -105,6 +106,7 @@ const Navbar = ({ hideMenu = false }) => {
                 variant="h6"
                 fontWeight="bold"
                 color="inherit"
+                paddingBottom={ 0.5 }
                 noWrap
                 sx={{ fontSize: { xs: 14, sm: 16 } }}
               >

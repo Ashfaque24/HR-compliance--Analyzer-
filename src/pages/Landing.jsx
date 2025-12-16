@@ -122,7 +122,7 @@ export default function Landing() {
         fontFamily: "Helvetica, Arial, sans-serif",
         width: "100%",
         overflow:{xs:'auto', md:'hidden'},
-        height:{lg:"calc(100vh - 112px)", md:'100%'}
+        height:{lg:"calc(100vh - 96px)", md:'100%'}
       }}
     >
       {/* Left information panel */}
@@ -294,7 +294,20 @@ sx={{
           <TextField
             label="Phone Number *"
             name="phone"
-            type="tel"
+            type="number"
+            sx={{
+              "& input[type=number]": {
+                MozAppearance: "textfield", // Firefox
+              },
+              "& input[type=number]::-webkit-outer-spin-button": {
+                WebkitAppearance: "none",
+                margin: 0,
+              },
+              "& input[type=number]::-webkit-inner-spin-button": {
+                WebkitAppearance: "none",
+                margin: 0,
+              },
+            }}
             variant="outlined"
             value={formData.phone}
             onChange={handleChange}
